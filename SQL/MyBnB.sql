@@ -7,6 +7,8 @@ CREATE TABLE accounts (
 	uid SERIAL,
     username VARCHAR(25) NOT NULL,
     password VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
     dob DATE NOT NULL,
     address VARCHAR(100) NOT NULL,
     occupation VARCHAR(50) NOT NULL,
