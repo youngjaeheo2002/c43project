@@ -39,12 +39,12 @@ CREATE TABLE listings (
     num_bedrooms SMALLINT UNSIGNED NOT NULL,
     num_bathrooms SMALLINT UNSIGNED NOT NULL,
     price REAL NOT NULL,
-    hostId BIGINT UNSIGNED NOT NULL,
+    hostId BIGINT UNSIGNED,
     longitude DECIMAL(10, 5) NOT NULL,
     latitude DECIMAL(10, 5) NOT NULL,
     
     PRIMARY KEY (lid),
-    FOREIGN KEY (hostId) REFERENCES accounts(uid) ON DELETE CASCADE
+    FOREIGN KEY (hostId) REFERENCES accounts(uid) ON DELETE SET NULL
 );
 
 DROP TABLE IF EXISTS available_on;
@@ -99,24 +99,24 @@ CREATE TABLE bookings (
     end_date DATE NOT NULL,
     cost REAL NOT NULL,
     is_cancelled BOOLEAN NOT NULL,
-    listing BIGINT UNSIGNED NOT NULL,
-    renterId BIGINT UNSIGNED NOT NULL,
+    listing BIGINT UNSIGNED,
+    renterId BIGINT UNSIGNED,
     
     PRIMARY KEY (bid),
-    FOREIGN KEY (listing) REFERENCES listings(lid) ON DELETE CASCADE,
-    FOREIGN KEY (renterId) REFERENCES accounts(uid) ON DELETE CASCADE
+    FOREIGN KEY (listing) REFERENCES listings(lid) ON DELETE SET NULL,
+    FOREIGN KEY (renterId) REFERENCES accounts(uid) ON DELETE SET NULL
 );
 
 DROP TABLE IF EXISTS cancellations;
 CREATE TABLE cancellations (
 	cid SERIAL,
     booking BIGINT UNSIGNED NOT NULL,
-    canceller BIGINT UNSIGNED NOT NULL,
+    canceller BIGINT UNSIGNED,
     cancel_date DATE NOT NULL,
     
     PRIMARY KEY (cid),
     FOREIGN KEY (booking) REFERENCES bookings(bid) ON DELETE CASCADE,
-    FOREIGN KEY (canceller) REFERENCES accounts(uid) ON DELETE CASCADE
+    FOREIGN KEY (canceller) REFERENCES accounts(uid) ON DELETE SET NULL
 );
 
 DROP TABLE IF EXISTS comments;
@@ -124,14 +124,14 @@ CREATE TABLE comments (
 	commentID SERIAL,
     comment TEXT NOT NULL,
     rating INT NOT NULL,
-    sender BIGINT UNSIGNED NOT NULL,
+    sender BIGINT UNSIGNED,
     receiver BIGINT UNSIGNED NOT NULL,
-    on_listing BIGINT UNSIGNED NOT NULL,
+    on_listing BIGINT UNSIGNED,
     
     PRIMARY KEY (commentID),
     FOREIGN KEY (sender) REFERENCES accounts(uid) ON DELETE CASCADE,
     FOREIGN KEY (receiver) REFERENCES accounts(uid) ON DELETE CASCADE,
-    FOREIGN KEY (on_listing) REFERENCES listings(lid) ON DELETE CASCADE,
+    FOREIGN KEY (on_listing) REFERENCES listings(lid) ON DELETE SET NULL,
     CHECK (rating >= 0 AND rating <=5),
     CHECK (sender <> receiver)
 );
