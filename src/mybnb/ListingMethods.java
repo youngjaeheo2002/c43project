@@ -3,6 +3,7 @@ import dataObjects.*;
 
 //import java.time.LocalDate;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class ListingMethods extends Methods{
@@ -127,9 +128,22 @@ public class ListingMethods extends Methods{
     }
 
     public boolean removeListing(int hostId, int lid) {
-        String query = "DELETE FROM listings WHERE lid = ? AND hostId = ?";
+        String[] queries = {
+                "SELECT bid FROM bookings WHERE listing = ? AND start_date > ?",
+                "DELETE FROM listings WHERE lid = ? AND hostId = ?"
+        };
         try {
-            PreparedStatement ps = this.connection.prepareStatement(query);
+            LocalDate currDate = LocalDate.now();
+            PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
+            ps1.setInt(1, lid);
+            ps1.setDate(2, Date.valueOf(currDate));
+            ResultSet ongoingCheck = ps1.executeQuery();
+            if (ongoingCheck.next()) {
+                System.out.println("Cannot remove this listing because there is a booking in a future date.");
+                return false;
+            }
+
+            PreparedStatement ps = this.connection.prepareStatement(queries[1]);
             ps.setInt(1, lid);
             ps.setInt(2, hostId);
             int rows = ps.executeUpdate();
