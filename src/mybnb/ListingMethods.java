@@ -12,9 +12,11 @@ public class ListingMethods extends Methods{
     }
 
     public boolean addListing(Listing listing) {
-        String query = "INSERT INTO listings(hostId, title, description, listing_type, num_bedrooms, num_bathrooms, longitude, latitude, price) VALUES (?,?,?,?,?,?,?,?,?)";
+        String[] queries = {
+                "INSERT INTO listings(hostId, title, description, listing_type, num_bedrooms, num_bathrooms, longitude, latitude, price) VALUES (?,?,?,?,?,?,?,?,?)"
+        };
         try {
-            PreparedStatement ps = this.connection.prepareStatement(query);
+            PreparedStatement ps = this.connection.prepareStatement(queries[0], Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, listing.host);
             ps.setString(2, listing.title);
             ps.setString(3, listing.desc);
@@ -25,12 +27,16 @@ public class ListingMethods extends Methods{
             ps.setDouble(8, listing.latitude);
             ps.setDouble(9, listing.price);
             int rows = ps.executeUpdate();
-            if (rows != 0) {
-                System.out.println("Successfully added listing.");
-                return true;
+            ResultSet keys = ps.getGeneratedKeys();
+            if (!keys.next()) {
+                System.out.println("Failed to add new listing.");
+                return false;
             }
+            int lid = (int) keys.getLong(1);
+            return true;
 
         } catch (SQLException e) {
+            e.printStackTrace();
             System.out.println("Error occurred when adding listing.");
         }
         return false;

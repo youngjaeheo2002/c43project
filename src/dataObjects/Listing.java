@@ -6,6 +6,13 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class Listing {
+    // Type constants
+    public static final String ENTIRE_PLACE_TYPE = "Entire Place";
+    public static final String HOTEL_ROOMS_TYPE = "Hotel Rooms";
+    public static final String PRIVATE_ROOMS_TYPE = "Private Rooms";
+    public static final String SHARED_ROOMS_TYPE = "Shared Rooms";
+    public static final String OTHER_TYPE = "Other";
+
     public int lid;
     public int host;
     public String type;
