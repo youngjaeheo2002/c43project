@@ -11,7 +11,7 @@ public class ListingMethods extends Methods{
         super();
     }
 
-    public boolean addListing(Listing listing) {
+    public int addListing(Listing listing) {
         String[] queries = {
                 "INSERT INTO listings(hostId, title, description, listing_type, num_bedrooms, num_bathrooms, longitude, latitude, price) VALUES (?,?,?,?,?,?,?,?,?)"
         };
@@ -30,43 +30,171 @@ public class ListingMethods extends Methods{
             ResultSet keys = ps.getGeneratedKeys();
             if (!keys.next()) {
                 System.out.println("Failed to add new listing.");
-                return false;
+                return -1;
             }
             int lid = (int) keys.getLong(1);
-            return true;
+
+
+            System.out.println("Successfully created listing " + lid);
+            return lid;
 
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Error occurred when adding listing.");
         }
-        return false;
+        return -1;
     }
 
-    public boolean updatePrice(int hostId, int listingId, double newPrice) {
-        String query = "UPDATE listings SET price = ? WHERE hostId = ? AND lid = ?";
+    public Boolean isHost(int lid, int hostId) {
+        String query = "SELECT * FROM listings WHERE lid = ? AND hostId = ?";
         try {
             PreparedStatement ps = this.connection.prepareStatement(query);
-            ps.setDouble(1, newPrice);
+            ps.setInt(1, lid);
             ps.setInt(2, hostId);
-            ps.setInt(3, listingId);
-            int rows = ps.executeUpdate();
-            if (rows != 0) {
-                System.out.println("Successfully updated price for listing " + listingId);
-                return true;
-            }
+            ResultSet result = ps.executeQuery();
+            return result.next();
 
         } catch (SQLException e) {
-            System.out.println("Error occurred when updating listing price.");
+            System.out.println("Failed to lookup listing or host.");
+            return null;
+        }
+    }
+
+    public boolean setAddress(int hostId, int lid, Address addr) {
+        String[] queries = {
+                "SELECT aid FROM addresses WHERE country = ? AND city = ? AND street_address = ? AND postal = ?",
+                "INSERT INTO addresses(country, city, street_address, postal) VALUES (?,?,?,?)",
+                "INSERT INTO at(listing, address) VALUES (?, ?)"
+        };
+
+        Boolean hostCheck = isHost(lid, hostId);
+        if (hostCheck == null || !hostCheck) {
+            System.out.println("User does not have permission to edit listing.");
+            return false;
+        }
+
+        try  {
+            int aid = 0;
+            // Check if the address is already exist
+            PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
+            ps1.setString(1, addr.country);
+            ps1.setString(2, addr.city);
+            ps1.setString(3, addr.street);
+            ps1.setString(4, addr.postal);
+            ResultSet existence = ps1.executeQuery();
+            if (existence.next()) {
+                aid = existence.getInt("aid");
+            } else {
+                // add the address if it does not exist.
+                PreparedStatement ps2 = this.connection.prepareStatement(queries[1], Statement.RETURN_GENERATED_KEYS);
+                ps2.setString(1, addr.country);
+                ps2.setString(2, addr.city);
+                ps2.setString(3, addr.street);
+                ps2.setString(4, addr.postal);
+                ps2.executeUpdate();
+                ResultSet keys = ps2.getGeneratedKeys();
+                if (!keys.next()) {
+                    System.out.println("Failed to add the new address.");
+                    return false;
+                }
+                aid = (int) keys.getLong(1);
+            }
+            // Link the listing and the address
+            PreparedStatement ps3 = this.connection.prepareStatement(queries[2]);
+            ps3.setInt(1, lid);
+            ps3.setInt(2, aid);
+            int rows = ps3.executeUpdate();
+            if (rows > 0) {
+                System.out.println("Successfully updated address of listing " + lid);
+                return true;
+            }
+            System.out.println("Failed to update address of listing " + lid);
+            return false;
+
+        } catch (SQLException e) {
+            System.out.println("Error occurred when updating address of listing " + lid);
+            return false;
+        }
+    }
+
+    public boolean setAmenities(int hostId, int lid, ArrayList<String> amenities) {
+        String[] queries = {
+                "DELETE FROM has_amenities WHERE lid = ?",
+                "INSERT INTO has_amenities(lid, amenity) VALUES (?, ?)"
+        };
+
+        Boolean hostCheck = isHost(lid, hostId);
+        if (hostCheck == null || !hostCheck) {
+            System.out.println("User does not have permission to edit listing.");
+            return false;
+        }
+
+        int amenitiesCheck = Listing.isValidAmenitiesArray(amenities);
+        if (amenitiesCheck != -1) {
+            System.out.println("Amenity " + amenities.get(amenitiesCheck) + " is not supported.");
+            return false;
+        }
+
+        try {
+            // Delete existing amenities
+            PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
+            ps1.setInt(1, lid);
+            ps1.executeUpdate();
+            // update amenities
+            for (String amenity : amenities) {
+                PreparedStatement ps2 = this.connection.prepareStatement(queries[1]);
+                ps2.setInt(1, lid);
+                ps2.setString(2, amenity);
+                ps2.executeUpdate();
+            }
+            System.out.println("Successfully set amenities for listing " + lid);
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Failed when updating amenities, please try again.");
         }
         return false;
     }
 
-    public boolean addAvailability(int lid, Date date) {
+    public boolean updatePrice(int hostId, int lid, double newPrice) {
+        String query = "UPDATE listings SET price = ? WHERE hostId = ? AND lid = ?";
+
+        Boolean hostCheck = isHost(lid, hostId);
+        if (hostCheck == null || !hostCheck) {
+            System.out.println("User does not have permission to edit listing.");
+            return false;
+        }
+
+        try {
+            PreparedStatement ps = this.connection.prepareStatement(query);
+            ps.setDouble(1, newPrice);
+            ps.setInt(2, hostId);
+            ps.setInt(3, lid);
+            int rows = ps.executeUpdate();
+            if (rows != 0) {
+                System.out.println("Successfully updated price of listing " + lid);
+                return true;
+            }
+            System.out.println("Failed to update price of listing " + lid);
+
+        } catch (SQLException e) {
+            System.out.println("Error occurred when updating price of listing " + lid);
+        }
+        return false;
+    }
+
+    public boolean addAvailability(int hostId, int lid, Date date) {
         String[] queries = {
                 "SELECT bid FROM bookings WHERE ? >= start_date AND ? <= end_date",
                 "SELECT * FROM available_on WHERE lid = ? AND date = ?",
                 "INSERT INTO available_on(lid, date) VALUES(?, ?)"
         };
+
+        Boolean hostCheck = isHost(lid, hostId);
+        if (hostCheck == null || !hostCheck) {
+            System.out.println("User does not have permission to edit listing.");
+            return false;
+        }
         try {
             // Check if the date is already booked
             PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
@@ -92,21 +220,30 @@ public class ListingMethods extends Methods{
             ps3.setDate(2, date);
             int rows =  ps3.executeUpdate();
             if (rows != 0) {
-                System.out.println("Successfully added date " + date);
+                // System.out.println("Successfully added date " + date);
                 return true;
             }
+            System.out.println("Failed to add date " + date + " to listing " + lid);
+
         } catch (Exception e) {
             // e.printStackTrace();
-            System.out.println("Error occurred when setting availability of date " + date);
+            System.out.println("Error occurred when setting availability of listing " + lid);
         }
         return false;
     }
 
-    public boolean removeAvailability(int lid, Date date) {
+    public boolean removeAvailability(int hostId, int lid, Date date) {
         String[] queries = {
                 "SELECT * FROM available_on WHERE lid = ? AND date = ?",
                 "DELETE FROM available_on WHERE lid = ? AND date = ?"
         };
+
+        Boolean hostCheck = isHost(lid, hostId);
+        if (hostCheck == null || !hostCheck) {
+            System.out.println("User does not have permission to edit listing.");
+            return false;
+        }
+
         try {
             // Check if date is currently available
             PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
@@ -123,9 +260,11 @@ public class ListingMethods extends Methods{
             ps2.setDate(2, date);
             int rows =  ps2.executeUpdate();
             if (rows != 0) {
-                System.out.println("Successfully removed date " + date);
+                // System.out.println("Successfully removed date " + date);
                 return true;
             }
+            System.out.println("Failed to remove date " + date + " to listing " + lid);
+
         } catch (SQLException e) {
             // e.printStackTrace();
             System.out.println("Error occurred when removing date " + date);
@@ -138,6 +277,13 @@ public class ListingMethods extends Methods{
                 "SELECT bid FROM bookings WHERE listing = ? AND start_date > ?",
                 "DELETE FROM listings WHERE lid = ? AND hostId = ?"
         };
+
+        Boolean hostCheck = isHost(lid, hostId);
+        if (hostCheck == null || !hostCheck) {
+            System.out.println("User does not have permission to edit listing.");
+            return false;
+        }
+
         try {
             LocalDate currDate = LocalDate.now();
             PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);

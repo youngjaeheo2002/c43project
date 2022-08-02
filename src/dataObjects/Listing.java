@@ -3,6 +3,8 @@ package dataObjects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class Listing {
@@ -12,6 +14,13 @@ public class Listing {
     public static final String PRIVATE_ROOMS_TYPE = "Private Rooms";
     public static final String SHARED_ROOMS_TYPE = "Shared Rooms";
     public static final String OTHER_TYPE = "Other";
+    public static final List<String> ALL_AMENITIES = Arrays.asList("Kitchen", "Internet", "TV", "Essentials", "Heating",
+            "Air Conditioning", "Washer", "Dryer", "Free Parking", "Wireless",
+            "Breakfast", "Pets", "Family Friendly", "Suitable for Events",
+            "Smoking", "Wheelchair Accessible", "Elevator", "Fireplace", "Buzzer",
+            "Doorman", "Pool", "Hot Tub", "Gym", "24 Hours Check-In", "Hangers",
+            "Iron", "Hair Dryer", "Laptop-friendly Workspace",
+            "Carbon Monoxide Detector", "First Aid Kit", "Smoke Detector");
 
     public int lid;
     public int host;
@@ -38,6 +47,15 @@ public class Listing {
         this.price = price;
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public static int isValidAmenitiesArray(ArrayList<String> arr) {
+        for (int i = 0; i < arr.size(); i++) {
+            if (!ALL_AMENITIES.contains(arr.get(i))) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static ArrayList<Listing> buildListingArray(ResultSet rs) throws SQLException {
