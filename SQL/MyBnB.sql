@@ -42,6 +42,7 @@ CREATE TABLE listings (
     hostId BIGINT UNSIGNED,
     longitude DECIMAL(10, 5) NOT NULL,
     latitude DECIMAL(10, 5) NOT NULL,
+    posted_date DATE NOT NULL,
     
     PRIMARY KEY (lid),
     FOREIGN KEY (hostId) REFERENCES accounts(uid) ON DELETE SET NULL
@@ -99,6 +100,7 @@ CREATE TABLE bookings (
     end_date DATE NOT NULL,
     cost REAL NOT NULL,
     is_cancelled BOOLEAN NOT NULL,
+    book_date DATE NOT NULL,
     listing BIGINT UNSIGNED,
     renterId BIGINT UNSIGNED,
     
