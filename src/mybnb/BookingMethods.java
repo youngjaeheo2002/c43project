@@ -89,12 +89,32 @@ public class BookingMethods extends Methods{
         }
     }
 
+    public Boolean exists(int bid) {
+        String query = "SELECT * FROM bookings WHERE bid = ?";
+        try {
+            PreparedStatement ps = this.connection.prepareStatement(query);
+            ps.setInt(1, bid);
+            ResultSet result = ps.executeQuery();
+            return result.next();
+        } catch (SQLException e) {
+            System.out.println("Error occurred when checking for existence of booking " + bid);
+            return null;
+        }
+
+    }
+
     public boolean cancelBooking(int canceller, int bid) {
         String[] queries = {
                 "UPDATE bookings SET is_cancelled = true WHERE bid = ?",
                 "INSERT INTO cancellations (booking, canceller, cancel_date) VALUES (?, ?, ?)",
                 "SELECT listing, start_date, end_date FROM bookings WHERE bid = ?"
         };
+
+        Boolean exist = exists(bid);
+        if (exist == null || exist) {
+            System.out.println("Booking " + bid + " does not exist.");
+            return false;
+        }
 
         Boolean isCancelled = isCancelled(bid);
         if (isCancelled == null || isCancelled) {
@@ -158,12 +178,13 @@ public class BookingMethods extends Methods{
     }
 
     public ResultSet getCancellationOfBooking(int bid) {
-        String query = "SELECT * FROM cancellation WHERE booking = ?";
+        String query = "SELECT * FROM cancellations WHERE booking = ?";
         try {
             PreparedStatement ps = this.connection.prepareStatement(query);
             ps.setInt(1, bid);
             return ps.executeQuery();
         } catch (SQLException e) {
+            e.printStackTrace();
             System.out.println("Error occurred when retrieving cancellation of booking " + bid);
         }
         return null;

@@ -29,6 +29,7 @@ public class Listing {
     public double price;
     public double latitude;
     public double longitude;
+    public Date posted_date;
     public Address addr;
     public ArrayList<String> amenities;
     public ArrayList<Date> availableDates;
@@ -66,6 +67,7 @@ public class Listing {
                 case "hostid" -> this.host = rs.getInt(i);
                 case "longitude" -> this.longitude = rs.getDouble(i);
                 case "latitude" -> this.latitude = rs.getDouble(i);
+                case "posted_date" -> this.posted_date = rs.getDate(i);
                 default -> {}
             }
         }
@@ -97,6 +99,7 @@ public class Listing {
                     case "hostid" -> listing.host = rs.getInt(i);
                     case "longitude" -> listing.longitude = rs.getDouble(i);
                     case "latitude" -> listing.latitude = rs.getDouble(i);
+                    case "posted_date" -> listing.posted_date = rs.getDate(i);
                     default -> {
                     }
                 }

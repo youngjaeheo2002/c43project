@@ -51,7 +51,7 @@ public class ListingMethods extends Methods{
 
     public int addListing(Listing listing) {
         String[] queries = {
-                "INSERT INTO listings(hostId, title, description, listing_type, num_bedrooms, num_bathrooms, longitude, latitude, price) VALUES (?,?,?,?,?,?,?,?,?)"
+                "INSERT INTO listings(hostId, title, description, listing_type, num_bedrooms, num_bathrooms, longitude, latitude, price, posted_date) VALUES (?,?,?,?,?,?,?,?,?,?)"
         };
         try {
             PreparedStatement ps = this.connection.prepareStatement(queries[0], Statement.RETURN_GENERATED_KEYS);
@@ -64,7 +64,8 @@ public class ListingMethods extends Methods{
             ps.setDouble(7, listing.longitude);
             ps.setDouble(8, listing.latitude);
             ps.setDouble(9, listing.price);
-            int rows = ps.executeUpdate();
+            ps.setDate(10, Date.valueOf(LocalDate.now()));
+            ps.executeUpdate();
             ResultSet keys = ps.getGeneratedKeys();
             if (!keys.next()) {
                 System.out.println("Failed to add new listing.");
@@ -83,19 +84,19 @@ public class ListingMethods extends Methods{
         return -1;
     }
 
-    public Boolean isHost(int lid, int hostId) {
-        String query = "SELECT * FROM listings WHERE lid = ? AND hostId = ?";
+    public String getHost(int lid) {
+        String query = "SELECT hostId FROM listings WHERE lid = ?";
         try {
             PreparedStatement ps = this.connection.prepareStatement(query);
             ps.setInt(1, lid);
-            ps.setInt(2, hostId);
             ResultSet result = ps.executeQuery();
-            return result.next();
-
+            if (result.next()) {
+                return result.getString("hostId");
+            }
         } catch (SQLException e) {
             System.out.println("Failed to lookup listing or host.");
-            return null;
         }
+        return null;
     }
 
     public boolean setAddress(int lid, Address addr) {
