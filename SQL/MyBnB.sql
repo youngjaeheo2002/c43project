@@ -99,6 +99,7 @@ CREATE TABLE bookings (
     end_date DATE NOT NULL,
     cost REAL NOT NULL,
     is_cancelled BOOLEAN NOT NULL,
+    book_date DATE NOT NULL,
     listing BIGINT UNSIGNED,
     renterId BIGINT UNSIGNED,
     

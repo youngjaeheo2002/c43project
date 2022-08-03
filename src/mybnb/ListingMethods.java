@@ -11,6 +11,44 @@ public class ListingMethods extends Methods{
         super();
     }
 
+    public Boolean exists(int lid) {
+        String query = "SELECT * FROM listings WHERE lid = ?";
+        try {
+            PreparedStatement ps = connection.prepareStatement(query);
+            ps.setInt(1, lid);
+            ResultSet result = ps.executeQuery();
+            return result.next();
+
+        } catch (SQLException e) {
+            System.out.println("Error occurred when checking for existence of listing " + lid);
+            return null;
+        }
+    }
+
+    public Boolean availableDateRange(int lid, LocalDate start, LocalDate end) {
+        String query = "SELECT * FROM available_on WHERE lid = " + lid + " AND date = ?";
+
+        if (end.isBefore(start)) {
+            System.out.println("start date of " + start + "is after end date of " + end);
+            return false;
+        }
+
+        try {
+            for (LocalDate i = start; i.isBefore(end) || i.isEqual(end);  i = i.plusDays(1)) {
+                PreparedStatement ps = this.connection.prepareStatement(query);
+                ps.setDate(1, Date.valueOf(i));
+                ResultSet result = ps.executeQuery();
+                if (!result.next()) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Error occurred when checking for date range from " + start + " to " + end);
+            return null;
+        }
+    }
+
     public int addListing(Listing listing) {
         String[] queries = {
                 "INSERT INTO listings(hostId, title, description, listing_type, num_bedrooms, num_bathrooms, longitude, latitude, price) VALUES (?,?,?,?,?,?,?,?,?)"
@@ -60,16 +98,16 @@ public class ListingMethods extends Methods{
         }
     }
 
-    public boolean setAddress(int hostId, int lid, Address addr) {
+    public boolean setAddress(int lid, Address addr) {
         String[] queries = {
                 "SELECT aid FROM addresses WHERE country = ? AND city = ? AND street_address = ? AND postal = ?",
                 "INSERT INTO addresses(country, city, street_address, postal) VALUES (?,?,?,?)",
                 "INSERT INTO at(listing, address) VALUES (?, ?)"
         };
 
-        Boolean hostCheck = isHost(lid, hostId);
-        if (hostCheck == null || !hostCheck) {
-            System.out.println("User does not have permission to edit listing.");
+        Boolean lidExist = exists(lid);
+        if (lidExist == null || !lidExist) {
+            System.out.println("The listing " + lid + " does not exist.");
             return false;
         }
 
@@ -117,15 +155,15 @@ public class ListingMethods extends Methods{
         }
     }
 
-    public boolean setAmenities(int hostId, int lid, ArrayList<String> amenities) {
+    public boolean addAmenities(int lid, ArrayList<String> amenities) {
         String[] queries = {
-                "DELETE FROM has_amenities WHERE lid = ?",
+                "SELECT * FROM has_amenities WHERE lid = ? AND amenity = ?",
                 "INSERT INTO has_amenities(lid, amenity) VALUES (?, ?)"
         };
 
-        Boolean hostCheck = isHost(lid, hostId);
-        if (hostCheck == null || !hostCheck) {
-            System.out.println("User does not have permission to edit listing.");
+        Boolean lidExist = exists(lid);
+        if (lidExist == null || !lidExist) {
+            System.out.println("The listing " + lid + " does not exist.");
             return false;
         }
 
@@ -136,32 +174,73 @@ public class ListingMethods extends Methods{
         }
 
         try {
-            // Delete existing amenities
-            PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
-            ps1.setInt(1, lid);
-            ps1.executeUpdate();
-            // update amenities
             for (String amenity : amenities) {
-                PreparedStatement ps2 = this.connection.prepareStatement(queries[1]);
-                ps2.setInt(1, lid);
-                ps2.setString(2, amenity);
-                ps2.executeUpdate();
+                PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
+                ps1.setInt(1, lid);
+                ps1.setString(2, amenity);
+                ResultSet existence = ps1.executeQuery();
+                if (!existence.next()) {
+                    PreparedStatement ps2 = this.connection.prepareStatement(queries[1]);
+                    ps2.setInt(1, lid);
+                    ps2.setString(2, amenity);
+                    ps2.executeUpdate();
+                }
             }
-            System.out.println("Successfully set amenities for listing " + lid);
+            System.out.println("Successfully added amenities for listing " + lid);
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Failed when updating amenities, please try again.");
+            System.out.println("Error occurred when adding amenities, please try again.");
         }
         return false;
+    }
+
+    public boolean removeAmenities(int lid, ArrayList<String> amenities) {
+        String[] queries = {
+                "SELECT * FROM has_amenities WHERE lid = ? AND amenity = ?",
+                "DELETE FROM has_amenities WHERE lid = ? AND amenity = ?"
+        };
+
+        Boolean lidExist = exists(lid);
+        if (lidExist == null || !lidExist) {
+            System.out.println("The listing " + lid + " does not exist.");
+            return false;
+        }
+
+        int amenitiesCheck = Listing.isValidAmenitiesArray(amenities);
+        if (amenitiesCheck != -1) {
+            System.out.println("Amenity " + amenities.get(amenitiesCheck) + " is not supported.");
+            return false;
+        }
+
+        try {
+            for (String amenity : amenities) {
+                PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
+                ps1.setInt(1, lid);
+                ps1.setString(2, amenity);
+                ResultSet existence = ps1.executeQuery();
+                if (existence.next()) {
+                    PreparedStatement ps2 = this.connection.prepareStatement(queries[1]);
+                    ps2.setInt(1, lid);
+                    ps2.setString(2, amenity);
+                    ps2.executeUpdate();
+                }
+            }
+            System.out.println("Successfully removed amenities for listing " + lid);
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error occurred when removing amenities, please try again.");
+            return false;
+        }
     }
 
     public boolean updatePrice(int hostId, int lid, double newPrice) {
         String query = "UPDATE listings SET price = ? WHERE hostId = ? AND lid = ?";
 
-        Boolean hostCheck = isHost(lid, hostId);
-        if (hostCheck == null || !hostCheck) {
-            System.out.println("User does not have permission to edit listing.");
+        Boolean lidExist = exists(lid);
+        if (lidExist == null || !lidExist) {
+            System.out.println("The listing " + lid + " does not exist.");
             return false;
         }
 
@@ -183,18 +262,19 @@ public class ListingMethods extends Methods{
         return false;
     }
 
-    public boolean addAvailability(int hostId, int lid, Date date) {
+    public boolean addAvailability(int lid, Date date) {
         String[] queries = {
-                "SELECT bid FROM bookings WHERE ? >= start_date AND ? <= end_date",
+                "SELECT bid FROM bookings WHERE ? >= start_date AND ? <= end_date AND is_cancelled = false",
                 "SELECT * FROM available_on WHERE lid = ? AND date = ?",
                 "INSERT INTO available_on(lid, date) VALUES(?, ?)"
         };
 
-        Boolean hostCheck = isHost(lid, hostId);
-        if (hostCheck == null || !hostCheck) {
-            System.out.println("User does not have permission to edit listing.");
+        Boolean lidExist = exists(lid);
+        if (lidExist == null || !lidExist) {
+            System.out.println("The listing " + lid + " does not exist.");
             return false;
         }
+
         try {
             // Check if the date is already booked
             PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
@@ -232,15 +312,15 @@ public class ListingMethods extends Methods{
         return false;
     }
 
-    public boolean removeAvailability(int hostId, int lid, Date date) {
+    public boolean removeAvailability(int lid, Date date) {
         String[] queries = {
                 "SELECT * FROM available_on WHERE lid = ? AND date = ?",
                 "DELETE FROM available_on WHERE lid = ? AND date = ?"
         };
 
-        Boolean hostCheck = isHost(lid, hostId);
-        if (hostCheck == null || !hostCheck) {
-            System.out.println("User does not have permission to edit listing.");
+        Boolean lidExist = exists(lid);
+        if (lidExist == null || !lidExist) {
+            System.out.println("The listing " + lid + " does not exist.");
             return false;
         }
 
@@ -278,12 +358,6 @@ public class ListingMethods extends Methods{
                 "DELETE FROM listings WHERE lid = ? AND hostId = ?"
         };
 
-        Boolean hostCheck = isHost(lid, hostId);
-        if (hostCheck == null || !hostCheck) {
-            System.out.println("User does not have permission to edit listing.");
-            return false;
-        }
-
         try {
             LocalDate currDate = LocalDate.now();
             PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
@@ -291,7 +365,7 @@ public class ListingMethods extends Methods{
             ps1.setDate(2, Date.valueOf(currDate));
             ResultSet ongoingCheck = ps1.executeQuery();
             if (ongoingCheck.next()) {
-                System.out.println("Cannot remove this listing because there is a booking in a future date.");
+                System.out.println("Cannot remove listing " + lid + " because there is a booking in a future date.");
                 return false;
             }
 
@@ -300,18 +374,18 @@ public class ListingMethods extends Methods{
             ps.setInt(2, hostId);
             int rows = ps.executeUpdate();
             if (rows == 0) {
-                System.out.println("This listing is does not exist.");
+                System.out.println("The listing " + lid + " does not exist.");
                 return false;
             }
-            System.out.println("Successfully removed listing.");
+            System.out.println("Successfully removed listing " + lid);
             return true;
         } catch (SQLException e) {
-            System.out.println("Error occurred when removing listing.");
+            System.out.println("Error occurred when removing listing " + lid);
         }
         return false;
     }
 
-    public ArrayList<Listing> getListingsOfUser(int hostId) {
+    public ArrayList<Listing> getHostListings(int hostId) {
         String query = "SELECT * FROM listings WHERE hostId = ?";
         try {
             PreparedStatement ps = this.connection.prepareStatement(query);
@@ -322,5 +396,42 @@ public class ListingMethods extends Methods{
             System.out.println("Error occurred when retrieving listings of host " + hostId);
         }
         return null;
+    }
+
+    public Listing getListingById(int lid) {
+        String[] queries = {
+                "SELECT * FROM listings WHERE lid = ?",
+                "SELECT * FROM addresses addr, at WHERE addr.aid = at.address AND at.listing = ?",
+                "SELECT amenity FROM has_amenities WHERE lid = ?",
+                "SELECT date FROM available_on WHERE lid = ?"
+        };
+
+        try {
+            PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
+            ps1.setInt(1, lid);
+            Listing listing = new Listing(ps1.executeQuery());
+            if (listing.lid == 0) {
+                System.out.println("Listing " + lid + " does not exist");
+                return null;
+            }
+
+            PreparedStatement ps2 = this.connection.prepareStatement(queries[1]);
+            ps2.setInt(1, lid);
+            listing.setAddress(ps2.executeQuery());
+
+            PreparedStatement ps3 = this.connection.prepareStatement(queries[2]);
+            ps3.setInt(1, lid);
+            listing.setAmenities(ps3.executeQuery());
+
+            PreparedStatement ps4 = this.connection.prepareStatement(queries[3]);
+            ps4.setInt(1, lid);
+            listing.setAmenities(ps4.executeQuery());
+
+            return listing;
+
+        } catch (SQLException e) {
+            System.out.println("Error occurred when retrieving listing " + lid);
+            return null;
+        }
     }
 }

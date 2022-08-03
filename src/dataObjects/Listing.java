@@ -2,10 +2,7 @@ package dataObjects;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class Listing {
     // Type constants
@@ -32,6 +29,9 @@ public class Listing {
     public double price;
     public double latitude;
     public double longitude;
+    public Address addr;
+    public ArrayList<String> amenities;
+    public ArrayList<Date> availableDates;
 
     public Listing() {
 
@@ -47,6 +47,28 @@ public class Listing {
         this.price = price;
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public Listing(ResultSet rs) throws SQLException {
+        if (!rs.next()) {
+            return;
+        }
+        int columns = rs.getMetaData().getColumnCount();
+        for (int i = 1; i <= columns; i ++) {
+            switch (rs.getMetaData().getColumnLabel(i).toLowerCase()) {
+                case "lid" -> this.lid = rs.getInt(i);
+                case "listing_type" -> this.type = rs.getString(i);
+                case "title" -> this.title = rs.getString(i);
+                case "description" -> this.desc = rs.getString(i);
+                case "num_bedrooms" -> this.num_bedrooms = rs.getInt(i);
+                case "num_bathrooms" -> this.num_bathrooms = rs.getInt(i);
+                case "price" -> this.price = rs.getDouble(i);
+                case "hostid" -> this.host = rs.getInt(i);
+                case "longitude" -> this.longitude = rs.getDouble(i);
+                case "latitude" -> this.latitude = rs.getDouble(i);
+                default -> {}
+            }
+        }
     }
 
     public static int isValidAmenitiesArray(ArrayList<String> arr) {
@@ -82,5 +104,28 @@ public class Listing {
             listingArr.add(listing);
         }
         return listingArr;
+    }
+
+    public void setAddress(ResultSet rs) throws SQLException {
+        if (rs.next()) {
+            this.addr = new Address(rs.getString("street_address"), rs.getString("city"), rs.getString("country"), rs.getString("postal"));
+            this.addr.aid = rs.getInt("aid");
+            return;
+        }
+        this.addr = null;
+    }
+
+    public void setAmenities(ResultSet rs) throws SQLException {
+        this.amenities = new ArrayList<>();
+        while (rs.next()) {
+            this.amenities.add(rs.getString("amenity"));
+        }
+    }
+
+    public void setAvailableDates(ResultSet rs) throws SQLException {
+        this.availableDates = new ArrayList<>();
+        while (rs.next()) {
+            this.availableDates.add(rs.getDate("date"));
+        }
     }
 }
