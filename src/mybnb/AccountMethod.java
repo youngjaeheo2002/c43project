@@ -136,7 +136,13 @@ public class AccountMethod extends Methods{
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM listings WHERE hostId = ?",Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1,id);
             ResultSet result = statement.executeQuery();
-            return result.next();
+
+            PreparedStatement s = connection.prepareStatement("SELECT * FROM creditcards WHERE renterID = ?",Statement.RETURN_GENERATED_KEYS);
+            s.setInt(1,id);
+            ResultSet r = s.executeQuery();
+            return result.next() && r.next();
+
+
         }
 
         catch(Exception e){
@@ -331,6 +337,34 @@ public class AccountMethod extends Methods{
         finally{
             System.out.println("got commetns about listing");
         }
+    }
+
+    public ResultSet getAvgRatingById(){
+        try{
+            PreparedStatement c = connection.prepareStatement("SELECT avg(rating), receiver FROM comments GROUP BY receiver");
+            ResultSet r = c.executeQuery();
+            while(r.next()){
+                String s = "|";
+
+                for (int i = 1;i<=2;i++){
+                    s += r.getString(i) + "|";
+                }
+                System.out.println(s);
+            }
+            return r;
+        }
+
+        catch (Exception e){
+            System.out.println(e);
+            return null;
+        }
+
+        finally{
+            System.out.println("Got avg rating by id");
+        }
+
+
+
     }
 
 
