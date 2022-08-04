@@ -177,6 +177,19 @@ public class BookingMethods extends Methods{
         return null;
     }
 
+    public ArrayList<Booking> getListingBookings(int lid) {
+        String query = "SELECT * FROM bookings WHERE listing = ?";
+        try {
+            PreparedStatement ps = this.connection.prepareStatement(query);
+            ps.setInt(1, lid);
+            ResultSet result = ps.executeQuery();
+            return Booking.buildBookingArray(result);
+        } catch (SQLException e) {
+            System.out.println("Error occurred when retrieving bookings of listing " + lid);
+        }
+        return null;
+    }
+
     public ResultSet getCancellationOfBooking(int bid) {
         String query = "SELECT * FROM cancellations WHERE booking = ?";
         try {

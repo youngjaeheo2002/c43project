@@ -121,7 +121,7 @@ public class Listing {
     public void setAmenities(ResultSet rs) throws SQLException {
         this.amenities = new ArrayList<>();
         while (rs.next()) {
-            this.amenities.add(rs.getString("amenity"));
+            this.amenities.add(rs.getString(1));
         }
     }
 
@@ -131,4 +131,36 @@ public class Listing {
             this.availableDates.add(rs.getDate("date"));
         }
     }
+
+    @Override
+    public String toString() {
+        String str = "  Id: " + this.lid + "\n" +
+                "  Title: " + this.title + "\n" +
+                "  Description: " + this.desc + "\n" +
+                "  Price: " + this.price + "\n" +
+                "  Created on: " + this.posted_date + "\n";
+        return str;
+    }
+
+    public String toStringFull() {
+        String str = toString() +
+                "  Type: " + this.type + "\n" +
+                "  Amenities: " + Arrays.toString(this.amenities.toArray()) + "\n" +
+                "  Address: " + addr.toString();
+        return str;
+    }
+
+    public String showCoords() {
+        return "  Lat: " + this.latitude + "   Long: " + this.longitude;
+    }
+
+    public String showAvailability(){
+        StringBuilder str = new StringBuilder();
+        str.append("  Available dates:\n");
+        for (Date i: this.availableDates) {
+            str.append("    ").append(i).append("\n");
+        }
+        return str.toString();
+    }
+
 }

@@ -62,15 +62,48 @@ public class AccountMethod extends Methods{
         }
     }
 
+    public String getUsernameFromId(int uid) {
+        String query = "SELECT username FROM accounts WHERE uid = ?";
+        try {
+            PreparedStatement ps = this.connection.prepareStatement(query);
+            ps.setInt(1, uid);
+            ResultSet result = ps.executeQuery();
+            if (!result.next()) {
+                System.out.println("Failed to retrieve username of user " + uid);
+                return null;
+            }
+            return result.getString("username");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error occurred when retrieving username of user " + uid);
+            return null;
+        }
+    }
+
+    public int getIdFromUsername(String username) {
+        String query = "SELECT uid FROM accounts WHERE username = ?";
+        try {
+            PreparedStatement ps = this.connection.prepareStatement(query);
+            ps.setString(1, username);
+            ResultSet result = ps.executeQuery();
+            if (!result.next()) {
+                System.out.println("Failed to retrieve uid of user " + username);
+                return 0;
+            }
+            return result.getInt("uid");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error occurred when retrieving uid of user " + username);
+            return 0;
+        }
+    }
+
+
     public ResultSet getCreditCards(String username) throws Exception{
         try{
             PreparedStatement s = connection.prepareStatement("SELECT * FROM creditCards c, accounts a WHERE a.uid = c.renterId AND a.username = ?");
             s.setString(1,username);
             ResultSet result = s.executeQuery();
-            while (result.next()){
-                System.out.println(result.getString("cardID") + " " + result.getString("card_num") + " " + result.getString("card_type") + " " + result.getString("expiry_date") + " " + result.getString("renterId"));
-            }
-            
             return result;
         }
 
@@ -78,11 +111,6 @@ public class AccountMethod extends Methods{
             System.out.println(e);
             return null;
         }
-
-        finally{
-            System.out.println("All credit cards have been selected");
-        }
-
     }
 
     public void addCreditCard(long card_num, String card_type, String expiry_date, int renterId) throws Exception{
@@ -110,24 +138,12 @@ public class AccountMethod extends Methods{
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM accounts WHERE username = ?",Statement.RETURN_GENERATED_KEYS);
             statement.setString(1,username);
             ResultSet r = statement.executeQuery();
-            while(r.next()){
-                String s = "|";
-
-                for (int i = 1;i<=9;i++){
-                    s += r.getString(i) + "|";
-                }
-                System.out.println(s);
-            }
             return r;
         }
 
         catch(Exception e){
             System.out.println(e);
             return null;
-        }
-
-        finally{
-            System.out.println("Got Account info");
         }
     }
 

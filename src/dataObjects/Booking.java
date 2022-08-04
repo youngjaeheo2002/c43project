@@ -48,4 +48,12 @@ public class Booking {
         }
         return bookingArr;
     }
+
+    @Override
+    public String toString() {
+        return "  Id: " + this.bid + "\n" +
+                "  Cost: " + this.cost + "\n" +
+                "  Duration: " + this.start + " -> " + this.end + "\n" +
+                "  Created on: " + this.book_date;
+    }
 }
