@@ -10,7 +10,7 @@ public class Searches extends Methods{
 
     public ResultSet searchWithinDistance(double latitude,double longitude,double distance){
         try{
-            PreparedStatement s = connection.prepareStatement("SELECT * FROM listings WHERE SQRT(POWER((latitude-?),2) + POWER((longitude-?),2)) <= ?  ORDER BY SQRT(POWER((latitude-?),2) + POWER((longitude-?),2)) ASC" ,Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement s = connection.prepareStatement("SELECT DISTINCT * FROM listings WHERE SQRT(POWER((latitude-?),2) + POWER((longitude-?),2)) <= ?  ORDER BY SQRT(POWER((latitude-?),2) + POWER((longitude-?),2)) ASC" ,Statement.RETURN_GENERATED_KEYS);
             s.setDouble(1,latitude);
             s.setDouble(2,longitude);
             s.setDouble(3,distance);
@@ -33,7 +33,7 @@ public class Searches extends Methods{
         try{
             String like_string = postal_code.substring(0,3);
             like_string = like_string + "%";
-            PreparedStatement s = connection.prepareStatement("SELECT l.* FROM listings l, addresses a, at b" +
+            PreparedStatement s = connection.prepareStatement("SELECT DISTINCT l.* FROM listings l, addresses a, at b" +
                     " WHERE l.lid = b.listing AND b.address = a.aid" +
                     " AND a.postal LIKE ?",Statement.RETURN_GENERATED_KEYS);
             s.setString(1,like_string);
@@ -52,7 +52,7 @@ public class Searches extends Methods{
 
     public ResultSet searchByExactAddress(String country,String city,String street_address){
         try{
-            PreparedStatement s = connection.prepareStatement("SELECT l.* FROM listings l, addresses a, at b" +
+            PreparedStatement s = connection.prepareStatement("SELECT DISTINCT l.* FROM listings l, addresses a, at b" +
                     " WHERE l.lid = b.listing AND b.address = a.aid" +
                     " AND a.country = ? AND a.city = ? AND a.street_address = ?",Statement.RETURN_GENERATED_KEYS);
             s.setString(1,country);
@@ -74,7 +74,7 @@ public class Searches extends Methods{
 
     public ResultSet temporalSearch( String start, String end){
         try{
-            PreparedStatement s = connection.prepareStatement("SELECT l.* FROM listings l, available_on a" +
+            PreparedStatement s = connection.prepareStatement("SELECT DISTINCT l.* FROM listings l, available_on a" +
                     " WHERE a.lid = l.lid" +
                     " AND a.date <= ? AND a.date >= ?",Statement.RETURN_GENERATED_KEYS);
             s.setString(1,end);
@@ -92,9 +92,28 @@ public class Searches extends Methods{
         }
     }
 
+    /**
+     * @param opcode length 5 String that is a binary number: 1 means do, 0 means don't.
+     *               Digit 1: search by distance from a location
+     *               Digit 2: search by postal code
+     *               Digit 3: search by exact address
+     *               Digit 4: search by date (temporal search)
+     *               Digit 5: search by amenities
+     * @param latitude used for search by distance from a location
+     * @param longitude used for search by distance from a location
+     * @param distance used for search by distance from a location
+     * @param postal_code used for search by adjacent postal code
+     * @param country used for search by exact address
+     * @param city used for search by exact address
+     * @param street_address used for search by exact address
+     * @param start used for search by date
+     * @param end used for search by date
+     * @param amenities used for search by amenities
+     * @return ResultSet of the query
+     */
     public ResultSet fullSearch(String opcode, double latitude, double longitude , double distance ,String postal_code,String country,String city,String street_address,String start , String end, ArrayList<String> amenities){
         try{
-            String s = "SELECT l.* FROM listings l, available_on a, addresses d, has_amenities x, at b WHERE l.lid = a.lid AND l.lid = b.listing AND d.aid = b.address AND l.lid = x.lid ";
+            String s = "SELECT DISTINCT l.* FROM listings l, available_on a, addresses d, has_amenities x, at b WHERE l.lid = a.lid AND l.lid = b.listing AND d.aid = b.address AND l.lid = x.lid ";
             if (opcode.charAt(0) == '1'){
                 s += "AND SQRT(POWER((l.latitude-"+latitude+"),2) + POWER((l.longitude-"+longitude+"),2)) <= "+distance+" ";
             }
@@ -125,7 +144,6 @@ public class Searches extends Methods{
                 }
                 s += ")";
             }
-            System.out.println(s);
 
             PreparedStatement statement = this.connection.prepareStatement(s);
             return statement.executeQuery();
