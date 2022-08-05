@@ -11,25 +11,31 @@ import java.util.Scanner;
 
 
 public class ListingPage {
+    public int hostId;
+    public CommentsPage commentsPage;
     public ListingMethods listingMethods;
     public Scanner inputScanner;
     public Listing currentListing;
+    public BookingPage bookingPage;
 
-    public ListingPage() {
+    public ListingPage(int hostId) {
+        this.hostId = hostId;
+        this.commentsPage = new CommentsPage();
         this.listingMethods = new ListingMethods();
         this.inputScanner = new Scanner(System.in);
+        this.bookingPage = new BookingPage(hostId);
     }
 
     public void displayListing(int lid) {
-         this.currentListing = listingMethods.getListingById(lid);
+        this.currentListing = listingMethods.getListingById(lid);
         System.out.println(currentListing.toStringFull());
         System.out.println(currentListing.showCoords());
         System.out.println(currentListing.showAvailability());
     }
 
-    public void displayOptions(int lid, int hostId) {
+    public void displayOptions(int lid) {
         int realHost = listingMethods.getHost(lid);
-        if (realHost != hostId) {
+        if (realHost != this.hostId) {
             System.out.println("You cannot access this listing.");
             return;
         }
@@ -43,10 +49,10 @@ public class ListingPage {
                     displayEditOptions(lid);
                     break;
                 case "2":
-
+                    this.bookingPage.displayOptions(lid, false);
                     break;
                 case "3":
-
+                    commentsPage.displayListingComments(lid);
                     break;
                 case "4":
                     exit = true;

@@ -33,9 +33,6 @@ public class AccountMethod extends Methods{
             System.out.println(e);
             return -1;
         }
-        finally{
-            System.out.println("SignUp Completed");
-        }
         return 0;
     }
 
@@ -54,11 +51,6 @@ public class AccountMethod extends Methods{
         catch(Exception e){
             System.out.println(e);
             return false;
-        }
-
-        finally{
-            System.out.println("Login complete");
-            
         }
     }
 
@@ -180,12 +172,6 @@ public class AccountMethod extends Methods{
             return false;
 
         }
-
-        finally{
-            System.out.println("found if id is a renter");
-        }
-
-        
     }
 
     public ResultSet getBookings(int id){
@@ -281,14 +267,6 @@ public class AccountMethod extends Methods{
             PreparedStatement c = connection.prepareStatement("SELECT * FROM comments WHERE sender = ?",Statement.RETURN_GENERATED_KEYS);
             c.setInt(1,sender);
             ResultSet r =  c.executeQuery();
-            while(r.next()){
-                String s = "|";
-
-                for (int i = 1;i<=6;i++){
-                    s += r.getString(i) + "|";
-                }
-                System.out.println(s);
-            }
             return r;
         }
 
@@ -296,10 +274,6 @@ public class AccountMethod extends Methods{
             System.out.println(e);
             return null;
 
-        }
-
-        finally{
-            System.out.println("Successfully searched for comments from ");
         }
     }
 
@@ -308,24 +282,11 @@ public class AccountMethod extends Methods{
             PreparedStatement c = connection.prepareStatement("SELECT * FROM comments WHERE receiver = ?",Statement.RETURN_GENERATED_KEYS);
             c.setInt(1,receiver);
             ResultSet r =  c.executeQuery();
-            while(r.next()){
-                String s = "|";
-
-                for (int i = 1;i<=6;i++){
-                    s += r.getString(i) + "|";
-                }
-                System.out.println(s);
-            }
             return r;
         }
-
         catch(Exception e){
             System.out.println(e);
             return null;
-        }
-
-        finally{
-            System.out.println("Got comments about");
         }
     }
 
@@ -334,14 +295,6 @@ public class AccountMethod extends Methods{
             PreparedStatement c= connection.prepareStatement("SELECT * FROM comments WHERE on_listing = ?",Statement.RETURN_GENERATED_KEYS);
             c.setInt(1,listing);
             ResultSet r =  c.executeQuery();
-            while(r.next()){
-                String s = "|";
-
-                for (int i = 1;i<=6;i++){
-                    s += r.getString(i) + "|";
-                }
-                System.out.println(s);
-            }
             return r;
         }
 
@@ -349,44 +302,40 @@ public class AccountMethod extends Methods{
             System.out.println(e);
             return null;
         }
-
-        finally{
-            System.out.println("got commetns about listing");
-        }
     }
 
-    public ResultSet getAvgRatingById(){
+    public double getListingAvgRating(int lid){
         try{
-            PreparedStatement c = connection.prepareStatement("SELECT avg(rating), receiver FROM comments GROUP BY receiver");
+            PreparedStatement c = connection.prepareStatement("SELECT avg(rating) FROM comments WHERE on_listing = ?");
+            c.setInt(1, lid);
             ResultSet r = c.executeQuery();
-            while(r.next()){
-                String s = "|";
-
-                for (int i = 1;i<=2;i++){
-                    s += r.getString(i) + "|";
-                }
-                System.out.println(s);
+            if (!r.next()) {
+                return -1;
             }
-            return r;
+            return r.getDouble(1);
         }
 
         catch (Exception e){
             System.out.println(e);
-            return null;
+            return -1;
         }
-
-        finally{
-            System.out.println("Got avg rating by id");
-        }
-
-
-
     }
 
+    public double getUserAvgRating(int uid){
+        try{
+            PreparedStatement c = connection.prepareStatement("SELECT avg(rating) FROM comments WHERE receiver = ?");
+            c.setInt(1, uid);
+            ResultSet r = c.executeQuery();
+            if (!r.next()) {
+                return -1;
+            }
+            return r.getDouble(1);
+        }
 
-
-
-
-
+        catch (Exception e){
+            System.out.println(e);
+            return -1;
+        }
+    }
 
 }

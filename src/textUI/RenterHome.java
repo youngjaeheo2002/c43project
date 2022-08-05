@@ -10,12 +10,16 @@ import java.util.Scanner;
 public class RenterHome {
     public int renterId;
     public BookingPage bookingPage;
+    public SearchPage searchPage;
+    public CommentsPage commentsPage;
     public AccountMethod accountMethod;
     public Scanner inputScanner;
 
     public RenterHome(int renterId) {
         this.renterId = renterId;
-        this.bookingPage = new BookingPage();
+        this.bookingPage = new BookingPage(renterId);
+        this.searchPage = new SearchPage();
+        this.commentsPage = new CommentsPage();
         this.accountMethod = new AccountMethod();
         this.inputScanner = new Scanner(System.in);
         System.out.println("\nLogged in as renter: " + renterId);
@@ -24,11 +28,11 @@ public class RenterHome {
     public void displayOptions() {
         boolean exit = false;
         while (!exit) {
-            System.out.print("Home:\n    1. Search listings\n    2. Your bookings\n    3. Account details\n    4. View comments\n    5.Logout\nChoose an option: ");
+            System.out.print("Home:\n    1. Search listings\n    2. Your bookings\n    3. Account details\n    4. View comments\n    5. Logout\nChoose an option: ");
             String userInput = inputScanner.nextLine();
             switch (userInput) {
                 case "1":
-
+                    this.searchPage.displayOptions(this.renterId);
                     break;
                 case "2":
                     this.bookingPage.displayOptions(renterId, true);
@@ -37,7 +41,7 @@ public class RenterHome {
                     accountDetails();
                     break;
                 case "4":
-
+                    commentsPage.displayUserOptions(renterId, false);
                     break;
                 case "5":
                     exit = true;

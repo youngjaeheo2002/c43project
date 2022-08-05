@@ -13,13 +13,15 @@ import dataObjects.*;
 public class HostHome {
     public int hostId;
     public ListingPage listingPage;
+    public CommentsPage commentsPage;
     public ListingMethods listingMethods;
     public AccountMethod accountMethod;
     public Scanner inputScanner;
 
     public HostHome(int hostId) {
         this.hostId = hostId;
-        this.listingPage = new ListingPage();
+        this.listingPage = new ListingPage(hostId);
+        this.commentsPage = new CommentsPage();
         this.listingMethods = new ListingMethods();
         this.accountMethod = new AccountMethod();
         this.inputScanner = new Scanner(System.in);
@@ -38,7 +40,7 @@ public class HostHome {
         boolean exit = false;
         while (!exit) {
             showListings();
-            System.out.print("Home:\n    1. Make new listing\n    2. See Listing\n    3. Account details\n    4. Logout\nChoose an option: ");
+            System.out.print("Home:\n    1. Make new listing\n    2. See Listing\n    3. Account details\n    4. View comments\n    5. Logout\nChoose an option: ");
             String userInput = inputScanner.nextLine();
             switch (userInput) {
                 case "1":
@@ -51,6 +53,9 @@ public class HostHome {
                     accountDetails();
                     break;
                 case "4":
+                    commentsPage.displayUserOptions(hostId, true);
+                    break;
+                case "5":
                     exit = true;
                     break;
                 default:
@@ -63,7 +68,7 @@ public class HostHome {
     public void seeListing() {
         System.out.print("Input a listing id to view the listing: ");
         int lid = Integer.parseInt(inputScanner.nextLine());
-        listingPage.displayOptions(lid, this.hostId);
+        listingPage.displayOptions(lid);
     }
 
     public void accountDetails()  {

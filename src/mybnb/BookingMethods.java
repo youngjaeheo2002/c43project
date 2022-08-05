@@ -27,6 +27,11 @@ public class BookingMethods extends Methods{
             return -1;
         }
 
+        Date now = Date.valueOf(LocalDate.now());
+        if (booking.start.before(now)) {
+            System.out.println("You cannot book dates in the past.");
+        }
+
         try {
             PreparedStatement ps = this.connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             ps.setDate(1, booking.start);
@@ -34,8 +39,8 @@ public class BookingMethods extends Methods{
             ps.setDouble(3, booking.cost);
             ps.setBoolean(4, booking.cancelled);
             ps.setDate(5, Date.valueOf(LocalDate.now()));
-            ps.setInt(5, booking.listing);
-            ps.setInt(6, booking.renter);
+            ps.setInt(6, booking.listing);
+            ps.setInt(7, booking.renter);
             ps.executeUpdate();
             ResultSet keys = ps.getGeneratedKeys();
             if (!keys.next()) {
@@ -55,6 +60,7 @@ public class BookingMethods extends Methods{
             return bid;
 
         } catch (SQLException e) {
+            e.printStackTrace();
             System.out.println("Error occurred when creating a new booking.");
             return -1;
         }
@@ -82,9 +88,25 @@ public class BookingMethods extends Methods{
             PreparedStatement ps = this.connection.prepareStatement(query);
             ps.setInt(1, bid);
             ResultSet result = ps.executeQuery();
-            return !(result.next());
+            return result.next();
         } catch (SQLException e) {
             System.out.println("Error occurred when checking for cancel status of booking " + bid);
+            return null;
+        }
+    }
+
+    public Boolean isStarted(int bid) {
+        String query = "SELECT start_date FROM bookings WHERE bid = ?";
+        try {
+            PreparedStatement ps = this.connection.prepareStatement(query);
+            ps.setInt(1, bid);
+            ResultSet result = ps.executeQuery();
+            result.next();
+            Date start_date = result.getDate("start_date");
+            return start_date.before(Date.valueOf(LocalDate.now()));
+
+        } catch (SQLException e) {
+            System.out.println("Error occurred when retrieving started date of booking " + bid);
             return null;
         }
     }
@@ -111,7 +133,7 @@ public class BookingMethods extends Methods{
         };
 
         Boolean exist = exists(bid);
-        if (exist == null || exist) {
+        if (exist == null || !exist) {
             System.out.println("Booking " + bid + " does not exist.");
             return false;
         }
@@ -125,6 +147,12 @@ public class BookingMethods extends Methods{
         Boolean cancellerCheck = validCanceller(bid, canceller);
         if (cancellerCheck == null || !cancellerCheck) {
             System.out.println("User " + canceller + " not have permission to cancel booking " + bid);
+            return false;
+        }
+
+        Boolean startedCheck = isStarted(bid);
+        if (startedCheck == null || startedCheck) {
+            System.out.println("Cannot cancel booking " + bid + "because it is already started");
             return false;
         }
 
@@ -202,5 +230,43 @@ public class BookingMethods extends Methods{
         }
         return null;
     }
+    public Booking getBookingById(int bid) {
+        String query = "SELECT * FROM bookings WHERE bid = ?";
+        try {
+            PreparedStatement ps = this.connection.prepareStatement(query);
+            ps.setInt(1, bid);
+            ResultSet result =  ps.executeQuery();
+            if (!result.next()) {
+                return null;
+            }
+            Booking booking = new Booking(result.getInt("listing"), result.getInt("renterId"), result.getDate("start_date"), result.getDate("end_date"), result.getDouble("cost"));
+            booking.bid = result.getInt("bid");
+            booking.book_date = result.getDate("book_date");
+            booking.cancelled = result.getBoolean("is_cancelled");
+            return booking;
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error occurred when retrieving booking " + bid);
+            return null;
+        }
+    }
+
+    public int getHostByBooking(int bid) {
+        String query = "SELECT l.hostId FROM bookings b, listings l WHERE b.listing = l.lid AND b.bid = ?";
+        try {
+            PreparedStatement ps = this.connection.prepareStatement(query);
+            ps.setInt(1, bid);
+            ResultSet result =  ps.executeQuery();
+            if (!result.next()) {
+                return 0;
+            }
+            return result.getInt(1);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error occurred when retrieving host from booking " + bid);
+            return 0;
+        }
+    }
 }
