@@ -3,6 +3,8 @@ package mybnb;
 import com.mysql.cj.x.protobuf.MysqlxPrepare;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Searches extends Methods{
 
@@ -88,6 +90,57 @@ public class Searches extends Methods{
         finally{
             System.out.println("Finished searchign by time");
         }
+    }
+
+    public ResultSet fullSearch(String opcode, double latitude, double longitude , double distance ,String postal_code,String country,String city,String street_address,String start , String end, ArrayList<String> amenities){
+        try{
+            String s = "SELECT l.* FROM listings l, available_on a, addresses d, has_amenities x, at b WHERE l.lid = a.lid AND l.lid = b.listing AND d.aid = b.address AND l.lid = x.lid ";
+            if (opcode.charAt(0) == '1'){
+                s += "AND SQRT(POWER((l.latitude-"+latitude+"),2) + POWER((l.longitude-"+longitude+"),2)) <= "+distance+" ";
+            }
+
+            if (opcode.charAt(1) == '1'){
+                String like_string = postal_code.substring(0,3);
+                like_string = like_string + "%";
+                s += "AND d.postal LIKE  '"+like_string+"' ";
+            }
+
+            if (opcode.charAt(2) == '1'){
+                s += "AND d.country = '"+country+"' AND d.city = '"+city+"' AND d.street_address = '"+street_address+"' ";
+            }
+
+            if (opcode.charAt(3) == '1'){
+                s+= "AND a.date <= '"+end+"' AND a.date >= '"+start+"' ";
+            }
+
+            if (opcode.charAt(4) == '1'){
+                s += "AND (";
+                for (int i = 0;i<amenities.size();i++){
+                    if (i == 0){
+                        s += "x.amenity = '"+amenities.get(i)+"' ";
+                    }
+                    else{
+                        s += "OR x.amenity = '"+amenities.get(i)+"' ";
+                    }
+                }
+                s += ")";
+            }
+            System.out.println(s);
+
+            PreparedStatement statement = this.connection.prepareStatement(s);
+            return statement.executeQuery();
+
+        }
+
+        catch(Exception e){
+            System.out.println(e);
+            return null;
+        }
+
+        finally{
+            System.out.println("Completed Full Search");
+        }
+
     }
 
 
