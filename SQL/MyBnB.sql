@@ -129,6 +129,7 @@ CREATE TABLE comments (
     sender BIGINT UNSIGNED,
     receiver BIGINT UNSIGNED NOT NULL,
     on_listing BIGINT UNSIGNED,
+    is_sender_renter BOOLEAN NOT NULL,
     
     PRIMARY KEY (commentID),
     FOREIGN KEY (sender) REFERENCES accounts(uid) ON DELETE CASCADE,
