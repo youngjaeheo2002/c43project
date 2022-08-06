@@ -38,7 +38,7 @@ public class AccountMethod extends Methods{
 
     public boolean Login(String username,String password) throws Exception{
         try{
-            PreparedStatement s = connection.prepareStatement("SELECT * FROM accounts WHERE username = ? AND password = ?", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement s = connection.prepareStatement("SELECT DISTINCT * FROM accounts WHERE username = ? AND password = ?", Statement.RETURN_GENERATED_KEYS);
             s.setString(1,username);
             s.setString(2,password);
         
@@ -93,7 +93,7 @@ public class AccountMethod extends Methods{
 
     public ResultSet getCreditCards(String username) throws Exception{
         try{
-            PreparedStatement s = connection.prepareStatement("SELECT * FROM creditCards c, accounts a WHERE a.uid = c.renterId AND a.username = ?");
+            PreparedStatement s = connection.prepareStatement("SELECT DISTINCT * FROM creditCards c, accounts a WHERE a.uid = c.renterId AND a.username = ?");
             s.setString(1,username);
             ResultSet result = s.executeQuery();
             return result;
@@ -127,7 +127,7 @@ public class AccountMethod extends Methods{
 
     public ResultSet getAccountInfo(String username){
         try{
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM accounts WHERE username = ?",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement("SELECT DISTINCT * FROM accounts WHERE username = ?",Statement.RETURN_GENERATED_KEYS);
             statement.setString(1,username);
             ResultSet r = statement.executeQuery();
             return r;
@@ -141,11 +141,11 @@ public class AccountMethod extends Methods{
 
     public boolean isaHost(int id){
         try{
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM listings WHERE hostId = ?",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement("SELECT DISTINCT * FROM listings WHERE hostId = ?",Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1,id);
             ResultSet result = statement.executeQuery();
 
-            PreparedStatement s = connection.prepareStatement("SELECT * FROM creditcards WHERE renterID = ?",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement s = connection.prepareStatement("SELECT DISTINCT * FROM creditcards WHERE renterID = ?",Statement.RETURN_GENERATED_KEYS);
             s.setInt(1,id);
             ResultSet r = s.executeQuery();
             return result.next() && r.next();
@@ -162,7 +162,7 @@ public class AccountMethod extends Methods{
 
     public boolean isaRenter(int id){
         try{
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM creditCards WHERE renterId = ?", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement("SELECT DISTINCT * FROM creditCards WHERE renterId = ?", Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1,id);
             return statement.executeQuery().next();
         }
@@ -176,7 +176,7 @@ public class AccountMethod extends Methods{
 
     public ResultSet getBookings(int id){
         try{
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM bookings WHERE renterId = ?",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement("SELECT DISTINCT  * FROM bookings WHERE renterId = ?",Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1,id);
             ResultSet r =  statement.executeQuery();
             while(r.next()){
@@ -204,7 +204,7 @@ public class AccountMethod extends Methods{
 
     public ResultSet getListings(int id){
         try {
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM listings WHERE hostId = ?",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement("SELECT DISTINCT * FROM listings WHERE hostId = ?",Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1,id);
             ResultSet r =  statement.executeQuery();
             while(r.next()){
@@ -229,14 +229,15 @@ public class AccountMethod extends Methods{
 
     }
 
-    public void addComment(String comment, int rating, int sender, int receiver, int on_listing ){
+    public void addComment(String comment, int rating, int sender, int receiver, int on_listing, boolean is_sender_renter ){
         try{
-            PreparedStatement s = connection.prepareStatement("INSERT INTO comments (comment,rating,sender,receiver,on_listing) VALUES (?,?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement s = connection.prepareStatement("INSERT INTO comments (comment,rating,sender,receiver,on_listing, is_sender_renter) VALUES (?,?,?,?,?,?)",Statement.RETURN_GENERATED_KEYS);
             s.setString(1,comment);
             s.setInt(2,rating);
             s.setInt(3,sender);
             s.setInt(4,receiver);
             s.setInt(5,on_listing);
+            s.setBoolean(6, is_sender_renter);
             s.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e);
@@ -264,7 +265,7 @@ public class AccountMethod extends Methods{
 
     public ResultSet getCommentsFrom(int sender){
         try{
-            PreparedStatement c = connection.prepareStatement("SELECT * FROM comments WHERE sender = ?",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement c = connection.prepareStatement("SELECT DISTINCT * FROM comments WHERE sender = ?",Statement.RETURN_GENERATED_KEYS);
             c.setInt(1,sender);
             ResultSet r =  c.executeQuery();
             return r;
@@ -279,7 +280,7 @@ public class AccountMethod extends Methods{
 
     public ResultSet getCommentsAbout(int receiver){
         try{
-            PreparedStatement c = connection.prepareStatement("SELECT * FROM comments WHERE receiver = ?",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement c = connection.prepareStatement("SELECT DISTINCT * FROM comments WHERE receiver = ?",Statement.RETURN_GENERATED_KEYS);
             c.setInt(1,receiver);
             ResultSet r =  c.executeQuery();
             return r;
@@ -292,7 +293,7 @@ public class AccountMethod extends Methods{
 
     public ResultSet getCommentsAboutListing(int listing){
         try{
-            PreparedStatement c= connection.prepareStatement("SELECT * FROM comments WHERE on_listing = ?",Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement c= connection.prepareStatement("SELECT * FROM comments WHERE on_listing = ? AND is_sender_renter = true",Statement.RETURN_GENERATED_KEYS);
             c.setInt(1,listing);
             ResultSet r =  c.executeQuery();
             return r;
@@ -306,7 +307,7 @@ public class AccountMethod extends Methods{
 
     public double getListingAvgRating(int lid){
         try{
-            PreparedStatement c = connection.prepareStatement("SELECT avg(rating) FROM comments WHERE on_listing = ?");
+            PreparedStatement c = connection.prepareStatement("SELECT avg(rating) FROM comments WHERE on_listing = ? AND is_sender_renter = true");
             c.setInt(1, lid);
             ResultSet r = c.executeQuery();
             if (!r.next()) {
