@@ -61,7 +61,7 @@ DROP TABLE IF EXISTS has_amenities;
 CREATE TABLE has_amenities (
 	lid BIGINT UNSIGNED NOT NULL,
     amenity ENUM('Kitchen', 'Internet', 'TV', 'Toilet paper','Hand soap',
-        'Shampoo','Body Wash or Bar Soap','One Towel Per Guest','One Pillow Per Guest','Sauna'
+        'Shampoo','Body Wash or Bar Soap','One Towel Per Guest','One Pillow Per Guest','Sauna',
         'Linens for each guest bed', 'Heating',
 		'Air Conditioning', 'Washer', 'Dryer', 'Free Parking', 'Wireless', 
 		'Breakfast', 'Pets', 'Family Friendly', 'Suitable for Events',
