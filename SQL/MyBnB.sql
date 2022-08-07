@@ -108,7 +108,8 @@ CREATE TABLE bookings (
     
     PRIMARY KEY (bid),
     FOREIGN KEY (listing) REFERENCES listings(lid) ON DELETE SET NULL,
-    FOREIGN KEY (renterId) REFERENCES accounts(uid) ON DELETE SET NULL
+    FOREIGN KEY (renterId) REFERENCES accounts(uid) ON DELETE SET NULL,
+    CHECK (book_date <= start_date)
 );
 
 DROP TABLE IF EXISTS cancellations;
