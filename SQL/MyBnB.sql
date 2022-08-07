@@ -22,7 +22,7 @@ DROP TABLE IF EXISTS creditCards;
 CREATE TABLE creditCards (
 	cardID SERIAL,
     card_num BIGINT NOT NULL,
-    card_type ENUM('Visa', 'MasterCard', 'American Express', 'Discover') NOT NULL,
+    card_type ENUM('Visa', 'MasterCard', 'American Express', 'Discover', 'Other') NOT NULL,
 	expiry_date DATE NOT NULL,
     renterId BIGINT UNSIGNED NOT NULL,
     

@@ -9,36 +9,35 @@ import java.util.ListIterator;
 public class HostToolKit extends Methods {
     ListingMethods l = new ListingMethods();
 
-    public double suggestPrice(int lid){
-        Listing listing = l.getListingById(lid);
-        if (listing == null) {
-            return -1;
-        }
+    public double suggestPrice(String type, int num_bedrooms, int num_bathrooms, ArrayList<String> amenities){
         double price = 0;
-        if (listing.type.equals("Entire Place")){
+        if (type.equals("Entire Place")){
             price += 100;
         }
 
-        else if (listing.type.equals("Hotel Rooms")){
+        else if (type.equals("Hotel Rooms")){
             price += 75;
         }
 
-        else if (listing.type.equals("Private Rooms")){
+        else if (type.equals("Private Rooms")){
             price +=  60;
         }
 
-        else if (listing.type.equals("Shared Rooms")){
+        else if (type.equals("Shared Rooms")){
             price += 30;
         }
 
-        else if (listing.type.equals("Other")){
+        else if (type.equals("Other")){
             System.out.println("Cannot suggest price for 'other'");
+            return -1;
+        } else {
+            System.out.println("Unknown type");
             return -1;
         }
 
-        price += listing.num_bathrooms * 50;
-        price += listing.num_bathrooms * 15;
-        ListIterator<String> a = listing.amenities.listIterator();
+        price += num_bedrooms * 50;
+        price += num_bathrooms * 15;
+        ListIterator<String> a = amenities.listIterator();
         while(a.hasNext()){
             String next = a.next();
             if (next.equals("Pool") || next.equals("Wireless") || next.equals("Kitchen")
@@ -65,7 +64,7 @@ public class HostToolKit extends Methods {
 
     }
 
-    public ArrayList<String> suggestAmenities(int lid) {
+    public double suggestAmenities(ArrayList<String> suggested, int lid) {
         Listing listing = l.getListingById(lid);
 
         ArrayList<String> essentials = new ArrayList<String>();
@@ -79,15 +78,13 @@ public class HostToolKit extends Methods {
         essentials.add("Linens for each guest bed");
         ListIterator<String> i = essentials.listIterator();
         ArrayList<String> amenities = listing.amenities;
-        ArrayList<String> suggested = new ArrayList<String>();
         while(i.hasNext()){
             String next = i.next();
             if (! amenities.contains(next)){
-
                 suggested.add(next);
             }
         }
-        return suggested;
+        return suggested.size()*12;
     }
 
 

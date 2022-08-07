@@ -84,19 +84,19 @@ public class ListingMethods extends Methods{
         return -1;
     }
 
-    public String getHost(int lid) {
+    public int getHost(int lid) {
         String query = "SELECT hostId FROM listings WHERE lid = ?";
         try {
             PreparedStatement ps = this.connection.prepareStatement(query);
             ps.setInt(1, lid);
             ResultSet result = ps.executeQuery();
             if (result.next()) {
-                return result.getString("hostId");
+                return result.getInt("hostId");
             }
         } catch (SQLException e) {
             System.out.println("Failed to lookup listing or host.");
         }
-        return null;
+        return -1;
     }
 
     public boolean setAddress(int lid, Address addr) {
@@ -276,6 +276,11 @@ public class ListingMethods extends Methods{
             return false;
         }
 
+        if (date.before(Date.valueOf(LocalDate.now()))) {
+            System.out.println("That date is already in the past.");
+            return false;
+        }
+
         try {
             // Check if the date is already booked
             PreparedStatement ps1 = this.connection.prepareStatement(queries[0]);
@@ -426,11 +431,12 @@ public class ListingMethods extends Methods{
 
             PreparedStatement ps4 = this.connection.prepareStatement(queries[3]);
             ps4.setInt(1, lid);
-            listing.setAmenities(ps4.executeQuery());
+            listing.setAvailableDates(ps4.executeQuery());
 
             return listing;
 
         } catch (SQLException e) {
+            e.printStackTrace();
             System.out.println("Error occurred when retrieving listing " + lid);
             return null;
         }

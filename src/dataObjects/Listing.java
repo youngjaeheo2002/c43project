@@ -11,7 +11,9 @@ public class Listing {
     public static final String PRIVATE_ROOMS_TYPE = "Private Rooms";
     public static final String SHARED_ROOMS_TYPE = "Shared Rooms";
     public static final String OTHER_TYPE = "Other";
-    public static final List<String> ALL_AMENITIES = Arrays.asList("Kitchen", "Internet", "TV", "Essentials", "Heating",
+    public static final List<String> ALL_AMENITIES = Arrays.asList("Kitchen", "Internet", "TV", "Toilet paper","Hand soap",
+            "Shampoo","Body Wash or Bar Soap","One Towel Per Guest","One Pillow Per Guest","Sauna",
+            "Linens for each guest bed", "Heating",
             "Air Conditioning", "Washer", "Dryer", "Free Parking", "Wireless",
             "Breakfast", "Pets", "Family Friendly", "Suitable for Events",
             "Smoking", "Wheelchair Accessible", "Elevator", "Fireplace", "Buzzer",
@@ -29,6 +31,7 @@ public class Listing {
     public double price;
     public double latitude;
     public double longitude;
+    public double distance;
     public Date posted_date;
     public Address addr;
     public ArrayList<String> amenities;
@@ -68,6 +71,7 @@ public class Listing {
                 case "longitude" -> this.longitude = rs.getDouble(i);
                 case "latitude" -> this.latitude = rs.getDouble(i);
                 case "posted_date" -> this.posted_date = rs.getDate(i);
+                case "distance" -> this.distance = rs.getDouble(i);
                 default -> {}
             }
         }
@@ -100,6 +104,7 @@ public class Listing {
                     case "longitude" -> listing.longitude = rs.getDouble(i);
                     case "latitude" -> listing.latitude = rs.getDouble(i);
                     case "posted_date" -> listing.posted_date = rs.getDate(i);
+                    case "distance" -> listing.distance = rs.getDouble(i);
                     default -> {
                     }
                 }
@@ -121,7 +126,7 @@ public class Listing {
     public void setAmenities(ResultSet rs) throws SQLException {
         this.amenities = new ArrayList<>();
         while (rs.next()) {
-            this.amenities.add(rs.getString("amenity"));
+            this.amenities.add(rs.getString(1));
         }
     }
 
@@ -131,4 +136,40 @@ public class Listing {
             this.availableDates.add(rs.getDate("date"));
         }
     }
+
+    @Override
+    public String toString() {
+        String str = "  Id: " + this.lid + "\n" +
+                "  Title: " + this.title + "\n" +
+                "  Description: " + this.desc + "\n" +
+                "  Price: " + this.price + "\n" +
+                "  Created on: " + this.posted_date + "\n";
+        return str;
+    }
+
+    public String toStringFull() {
+        String str = toString() +
+                "  Type: " + this.type + "\n" +
+                "  Amenities: " + Arrays.toString(this.amenities.toArray()) + "\n" +
+                "  Address: " + addr.toString();
+        return str;
+    }
+
+    public String showCoords() {
+        return "  Lat: " + this.latitude + "   Long: " + this.longitude;
+    }
+
+    public String showAvailability(){
+        StringBuilder str = new StringBuilder();
+        str.append("  Available dates:\n");
+        for (Date i: this.availableDates) {
+            str.append("    ").append(i).append("\n");
+        }
+        return str.toString();
+    }
+
+    public String toStringIncludeDistance() {
+        return toString() + "  Distance from user: " + this.distance + "\n";
+    }
+
 }

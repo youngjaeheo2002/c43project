@@ -28,25 +28,25 @@ public class ReportMethods extends Methods{
                 "FROM at RIGHT JOIN addresses a ON at.address = a.aid " +
                 "GROUP BY a.country, a.city, a.postal";
 
-    final String HOST_LISTINGS_PER_COUNTRY = "SELECT addr.country AS country, a.uid AS host, COUNT(l.lid) AS listing_count " +
+    final String HOST_LISTINGS_PER_COUNTRY = "SELECT addr.country AS country, a.uid AS hostId, COUNT(l.lid) AS listing_count " +
                 "FROM accounts a " +
                 "LEFT JOIN creditCards c ON c.renterId = a.uid " +
                 "LEFT JOIN listings l ON l.hostId = a.uid " +
                 "LEFT JOIN (at JOIN addresses addr ON at.address = addr.aid) ON at.listing = l.lid " +
                 "WHERE c.card_num IS NULL " +
-                "GROUP BY country, host " +
+                "GROUP BY country, hostId " +
                 "ORDER BY listing_count DESC";
 
-    final String HOST_LISTINGS_PER_CITY = "SELECT addr.country AS country, addr.city AS city, a.uid AS host, COUNT(l.lid) AS listing_count " +
+    final String HOST_LISTINGS_PER_CITY = "SELECT addr.country AS country, addr.city AS city, a.uid AS hostId, COUNT(l.lid) AS listing_count " +
                 "FROM accounts a " +
                 "LEFT JOIN creditCards c ON c.renterId = a.uid " +
                 "LEFT JOIN listings l ON l.hostId = a.uid " +
                 "LEFT JOIN (at JOIN addresses addr ON at.address = addr.aid) ON at.listing = l.lid " +
                 "WHERE c.card_num IS NULL " +
-                "GROUP BY country, city, host " +
+                "GROUP BY country, city, hostId " +
                 "ORDER BY listing_count DESC";
 
-    final String COMMERCIAL_HOSTS_PER_CITY = "SELECT lph.country AS country, lph.city AS city, lph.host AS host, lph.listing_count AS listing_count, lpc.listing_count AS total_count, (lph.listing_count / lpc.listing_count) * 100 AS market_share\n" +
+    final String COMMERCIAL_HOSTS_PER_CITY = "SELECT lph.country AS country, lph.city AS city, lph.host AS hostId, lph.listing_count AS listing_count, lpc.listing_count AS total_count, (lph.listing_count / lpc.listing_count) * 100 AS market_share\n" +
                 "FROM\n" +
                 "(SELECT addr.country AS country, addr.city AS city, a.uid AS host, COUNT(l.lid) AS listing_count\n" +
                 "    FROM accounts a\n" +
@@ -62,16 +62,14 @@ public class ReportMethods extends Methods{
                 "    GROUP BY country, city) AS lpc\n" +
                 "WHERE lph.country = lpc.country AND lph.city = lpc.city AND ((lph.listing_count / lpc.listing_count) * 100) >= 10";
 
-    final String RENTER_BOOKINGS_PER_COUNTRY = "SELECT addr.country AS country, a.uid AS renter, COUNT(b.bid) AS booking_count\n" +
+    final String RENTER_BOOKINGS = "SELECT a.uid AS renterId, COUNT(b.bid) AS booking_count\n" +
                 "FROM accounts a LEFT JOIN creditCards c ON a.uid = c.renterId\n" +
                 "LEFT JOIN bookings b ON a.uid = b.renterId\n" +
-                "LEFT JOIN listings l ON b.listing = l.lid\n" +
-                "LEFT JOIN (at JOIN addresses addr ON at.address = addr.aid) ON at.listing = l.lid\n" +
                 "WHERE c.card_num IS NOT NULL AND b.is_cancelled = false AND b.start_date >= ? AND b.start_date <= ? \n" +
-                "GROUP BY country, renter\n" +
+                "GROUP BY renterId\n" +
                 "ORDER BY booking_count DESC";
 
-    final String RENTER_BOOKINGS_PER_CITY = "SELECT addr.country AS country, addr.city AS city, a.uid AS renter, COUNT(b.bid) AS booking_count\n" +
+    final String RENTER_BOOKINGS_PER_CITY = "SELECT addr.country AS country, addr.city AS city, a.uid AS renterId, COUNT(b.bid) AS booking_count\n" +
                 "FROM accounts a LEFT JOIN creditCards c ON a.uid = c.renterId\n" +
                 "LEFT JOIN bookings b ON a.uid = b.renterId\n" +
                 "LEFT JOIN listings l ON b.listing = l.lid\n" +
@@ -85,13 +83,13 @@ public class ReportMethods extends Methods{
                 "    GROUP BY a.uid\n" +
                 "    HAVING COUNT(b.bid) >= 2\n" +
                 ")\n" +
-                "GROUP BY country, city, renter\n" +
+                "GROUP BY country, city, renterId\n" +
                 "ORDER BY booking_count DESC";
 
-    final String USER_CANCELLATIONS = "SELECT a.uid AS user, COUNT(c.cid) AS cancellation_count \n" +
+    final String USER_CANCELLATIONS = "SELECT a.uid AS userId, COUNT(c.cid) AS cancellation_count \n" +
                 "FROM accounts a LEFT JOIN cancellations c ON c.canceller = a.uid\n" +
                 "WHERE c.cancel_date >= ? AND c.cancel_date <= ? \n" +
-                "GROUP BY user\n" +
+                "GROUP BY userId\n" +
                 "ORDER BY cancellation_count DESC";
 
     public ReportMethods() {
@@ -127,7 +125,7 @@ public class ReportMethods extends Methods{
         switch(report) {
             case "bookings_city" -> query = BOOKINGS_PER_CITY;
             case "bookings_postal" -> query = BOOKINGS_PER_POSTAL;
-            case "renter_country" -> query = RENTER_BOOKINGS_PER_COUNTRY;
+            case "renter_ranking" -> query = RENTER_BOOKINGS;
             default -> {return null;}
         }
         try {

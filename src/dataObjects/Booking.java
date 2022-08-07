@@ -39,13 +39,33 @@ public class Booking {
                     case "end_date" -> booking.end = rs.getDate(i);
                     case "cost" -> booking.cost = rs.getDouble(i);
                     case "is_cancelled" -> booking.cancelled = rs.getBoolean(i);
-                    case "listing" -> booking.listing = rs.getInt(i);
-                    case "renterid" -> booking.renter = rs.getInt(i);
+                    case "listing" -> {
+                        if (rs.getObject(i) == null) {
+                            booking.listing = 0;
+                        } else {
+                            booking.listing = rs.getInt(i);
+                        }
+                    }
+                    case "renterid" -> {
+                        if (rs.getObject(i) == null) {
+                            booking.renter = 0;
+                        } else {
+                            booking.renter = rs.getInt(i);
+                        }
+                    }
                     default -> {}
                 }
             }
             bookingArr.add(booking);
         }
         return bookingArr;
+    }
+
+    @Override
+    public String toString() {
+        return "  Id: " + this.bid + "\n" +
+                "  Cost: " + this.cost + "\n" +
+                "  Duration: " + this.start + " -> " + this.end + "\n" +
+                "  Created on: " + this.book_date;
     }
 }

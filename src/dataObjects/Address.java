@@ -13,4 +13,9 @@ public class Address {
         this.street = street;
         this.postal = postal;
     }
+
+    @Override
+    public String toString() {
+        return this.street + ", " + this.city + ", " + this.country + ", " + this.postal;
+    }
 }
