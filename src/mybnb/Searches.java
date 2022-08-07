@@ -137,7 +137,7 @@ public class Searches extends Methods{
                 s += "AND l.price >= " + lowest + " AND l.price <= " + highest + " ";
             }
 
-            if (opcode.charAt(5) == '1'){
+            if (opcode.charAt(5) == '1' && !amenities.isEmpty()){
                 s += "AND (";
                 for (int i = 0;i<amenities.size();i++){
                     if (i == 0){

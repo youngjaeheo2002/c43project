@@ -103,16 +103,19 @@ public class SearchPage {
         if (userAmenitiesChoice.toLowerCase().equals("y")) {
             opcode += "1" ;
             boolean finishChoice = false;
-            String[] supportedAmenities = {"Kitchen", "Internet", "TV", "Essentials", "Heating", "Air Conditioning", "Washer", "Dryer", "Free Parking", "Wireless", "Breakfast", "Pets", "Family Friendly", "Suitable for Events", "Smoking", "Wheelchair Accessible", "Elevator", "Fireplace", "Buzzer", "Doorman", "Pool", "Hot Tub", "Gym", "24 Hours Check-In", "Hangers", "Iron", "Hair Dryer", "Laptop-friendly Workspace", "Carbon Monoxide Detector", "First Aid Kit", "Smoke Detector"};
+            String[] supportedAmenities = {"Kitchen", "Internet", "TV",
+                    "Toilet paper","Hand soap", "Shampoo","Body Wash or Bar Soap","One Towel Per Guest","One Pillow Per Guest","Sauna", "Linens for each guest bed",
+                    "Heating", "Air Conditioning", "Washer", "Dryer", "Free Parking", "Wireless", "Breakfast", "Pets", "Family Friendly", "Suitable for Events", "Smoking", "Wheelchair Accessible", "Elevator", "Fireplace", "Buzzer", "Doorman", "Pool", "Hot Tub", "Gym", "24 Hours Check-In", "Hangers", "Iron", "Hair Dryer", "Laptop-friendly Workspace", "Carbon Monoxide Detector", "First Aid Kit", "Smoke Detector"};
             while (!finishChoice) {
                 System.out.println("Choose listings amenities:\n" +
-                        "1. Kitchen            2. Internet                     3. TV                      4. Essentials        5. Heating\n" +
-                        "6, Air Conditioning   7. Washer                       8. Dryer                   9. Free Parking      10. Wireless\n" +
-                        "11. Breakfast         12. Pets                        13. Family Friendly        14. Suitable for Events\n" +
-                        "15. Smoking           16. Wheelchair Accessible       17. Elevator               18. Fireplace        19. Buzzer\n" +
-                        "20. Doorman           21. Pool                        22. Hot Tub                23. Gym              24. 24 Hours Check-In\n" +
-                        "25. Hangers           26. Iron                        27. Hair Dryer             28. Laptop-friendly Workspace\n" +
-                        "29. Carbon Monoxide Detector                          30. First Aid Kit          31.Smoke Detector\n");
+                        "1. Kitchen            2. Internet                     3. TV                      4. Toiler paper\n" +
+                        "5. Hand soap          6. Shampoo                      7. Body Wash or Bar Soap   8. One Towel Per Guess      9. One Pillow Per Guest\n" +
+                        "10. Sauna             11. Lines for each guest bed    12. Heating                13, Air Conditioning        14. Washer\n" +
+                        "15. Dryer             16. Free Parking                17. Wireless               18. Breakfast               19. Pets\n" +
+                        "20. Family Friendly   21. Suitable for Events         22. Smoking                23. Wheelchair Accessible   24. Elevator\n" +
+                        "25. Fireplace         26. Buzzer                      27. Doorman                28. Pool                    29. Hot Tub\n" +
+                        "30. Gym               31. 24 Hours Check-In           32. Hangers                33. Iron                    34. Hair Dryer\n" +
+                        "35. Laptop-friendly Workspace           36. Carbon Monoxide Detector             37. First Aid Kit           38.Smoke Detector\n");
                 System.out.println("Chosen amenities: " + Arrays.toString(amenities.toArray()));
                 System.out.print("Choose amenity to add, enter 0 to finish choosing: ");
                 int choice = Integer.parseInt(inputScanner.nextLine());

@@ -11,7 +11,9 @@ public class Listing {
     public static final String PRIVATE_ROOMS_TYPE = "Private Rooms";
     public static final String SHARED_ROOMS_TYPE = "Shared Rooms";
     public static final String OTHER_TYPE = "Other";
-    public static final List<String> ALL_AMENITIES = Arrays.asList("Kitchen", "Internet", "TV", "Essentials", "Heating",
+    public static final List<String> ALL_AMENITIES = Arrays.asList("Kitchen", "Internet", "TV", "Toilet paper","Hand soap",
+            "Shampoo","Body Wash or Bar Soap","One Towel Per Guest","One Pillow Per Guest","Sauna",
+            "Linens for each guest bed", "Heating",
             "Air Conditioning", "Washer", "Dryer", "Free Parking", "Wireless",
             "Breakfast", "Pets", "Family Friendly", "Suitable for Events",
             "Smoking", "Wheelchair Accessible", "Elevator", "Fireplace", "Buzzer",
