@@ -116,6 +116,12 @@ public class BookingPage {
             return;
         }
 
+        Boolean cancelled = bookingMethods.isCancelled(bid);
+            if (cancelled == null || cancelled) {
+                System.out.println("Booking " + bid + " was cancelled.");
+                return;
+            }
+
         Booking booking = bookingMethods.getBookingById(bid);
         int hostId = bookingMethods.getHostByBooking(bid);
 
