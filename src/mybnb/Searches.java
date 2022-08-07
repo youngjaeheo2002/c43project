@@ -1,10 +1,8 @@
 package mybnb;
 
-import com.mysql.cj.x.protobuf.MysqlxPrepare;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Searches extends Methods{
 
@@ -29,14 +27,16 @@ public class Searches extends Methods{
         }
     }
 
-    public ResultSet searchByPostalCode(String postal_code){
+    public ResultSet searchByPostalCode(String postal_code, String country){
         try{
             String like_string = postal_code.substring(0,3);
             like_string = like_string + "%";
             PreparedStatement s = connection.prepareStatement("SELECT DISTINCT l.* FROM listings l, addresses a, at b" +
                     " WHERE l.lid = b.listing AND b.address = a.aid" +
-                    " AND a.postal LIKE ?",Statement.RETURN_GENERATED_KEYS);
+                    " AND a.postal LIKE ?" +
+                    " AND a.country = ?",Statement.RETURN_GENERATED_KEYS);
             s.setString(1,like_string);
+            s.setString(2, country);
             return s.executeQuery();
         }
 
@@ -88,17 +88,18 @@ public class Searches extends Methods{
         }
 
         finally{
-            System.out.println("Finished searchign by time");
+            System.out.println("Finished searching by time");
         }
     }
 
     /**
-     * @param opcode length 5 String that is a binary number: 1 means do, 0 means don't.
-     *               Digit 1: search by distance from a location
-     *               Digit 2: search by postal code
-     *               Digit 3: search by exact address
-     *               Digit 4: search by date (temporal search)
-     *               Digit 5: search by amenities
+     * @param opcode length 6 String that is a binary number: 1 means do, 0 means don't.
+     *               Digit 0: search by distance from a location
+     *               Digit 1: search by postal code
+     *               Digit 2: search by exact address
+     *               Digit 3: search by date (temporal search)
+     *               Digit 4: search by price range
+     *               Digit 5: search by amenities.
      * @param latitude used for search by distance from a location
      * @param longitude used for search by distance from a location
      * @param distance used for search by distance from a location
@@ -111,9 +112,9 @@ public class Searches extends Methods{
      * @param amenities used for search by amenities
      * @return ResultSet of the query
      */
-    public ResultSet fullSearch(String opcode, double latitude, double longitude , double distance ,String postal_code,String country,String city,String street_address,String start , String end, ArrayList<String> amenities){
+    public ResultSet fullSearch(String opcode, double latitude, double longitude , double distance , String distance_order, String postal_code,String country,String city,String street_address,String start , String end, double lowest, double highest, ArrayList<String> amenities){
         try{
-            String s = "SELECT DISTINCT l.* FROM listings l, available_on a, addresses d, has_amenities x, at b WHERE l.lid = a.lid AND l.lid = b.listing AND d.aid = b.address AND l.lid = x.lid ";
+            String s = "SELECT DISTINCT l.*, SQRT(POWER((l.latitude-"+latitude+"),2) + POWER((l.longitude-"+longitude+"),2)) AS distance FROM listings l, available_on a, addresses d, has_amenities x, at b WHERE l.lid = a.lid AND l.lid = b.listing AND d.aid = b.address AND l.lid = x.lid ";
             if (opcode.charAt(0) == '1'){
                 s += "AND SQRT(POWER((l.latitude-"+latitude+"),2) + POWER((l.longitude-"+longitude+"),2)) <= "+distance+" ";
             }
@@ -121,7 +122,7 @@ public class Searches extends Methods{
             if (opcode.charAt(1) == '1'){
                 String like_string = postal_code.substring(0,3);
                 like_string = like_string + "%";
-                s += "AND d.postal LIKE  '"+like_string+"' ";
+                s += "AND d.postal LIKE  '"+like_string+"' AND d.country = '" + country + "' ";
             }
 
             if (opcode.charAt(2) == '1'){
@@ -132,7 +133,11 @@ public class Searches extends Methods{
                 s+= "AND a.date <= '"+end+"' AND a.date >= '"+start+"' ";
             }
 
-            if (opcode.charAt(4) == '1'){
+            if (opcode.charAt(4) == '1') {
+                s += "AND l.price >= " + lowest + " AND l.price <= " + highest + " ";
+            }
+
+            if (opcode.charAt(5) == '1'){
                 s += "AND (";
                 for (int i = 0;i<amenities.size();i++){
                     if (i == 0){
@@ -145,6 +150,9 @@ public class Searches extends Methods{
                 s += ")";
             }
 
+            if (opcode.charAt(0) == '1') {
+                s += " ORDER BY (SQRT(POWER((l.latitude-"+latitude+"),2) + POWER((l.longitude-"+longitude+"),2))) " + distance_order.toUpperCase();
+            }
             PreparedStatement statement = this.connection.prepareStatement(s);
             return statement.executeQuery();
 
@@ -156,7 +164,7 @@ public class Searches extends Methods{
         }
 
         finally{
-            System.out.println("Completed Full Search");
+            System.out.println("Completed Filtered Search");
         }
 
     }

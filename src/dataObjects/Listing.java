@@ -29,6 +29,7 @@ public class Listing {
     public double price;
     public double latitude;
     public double longitude;
+    public double distance;
     public Date posted_date;
     public Address addr;
     public ArrayList<String> amenities;
@@ -68,6 +69,7 @@ public class Listing {
                 case "longitude" -> this.longitude = rs.getDouble(i);
                 case "latitude" -> this.latitude = rs.getDouble(i);
                 case "posted_date" -> this.posted_date = rs.getDate(i);
+                case "distance" -> this.distance = rs.getDouble(i);
                 default -> {}
             }
         }
@@ -100,6 +102,7 @@ public class Listing {
                     case "longitude" -> listing.longitude = rs.getDouble(i);
                     case "latitude" -> listing.latitude = rs.getDouble(i);
                     case "posted_date" -> listing.posted_date = rs.getDate(i);
+                    case "distance" -> listing.distance = rs.getDouble(i);
                     default -> {
                     }
                 }
@@ -161,6 +164,10 @@ public class Listing {
             str.append("    ").append(i).append("\n");
         }
         return str.toString();
+    }
+
+    public String toStringIncludeDistance() {
+        return toString() + "  Distance from user: " + this.distance + "\n";
     }
 
 }

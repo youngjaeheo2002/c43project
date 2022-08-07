@@ -144,9 +144,9 @@ public class BookingPage {
         System.out.println("Type a comment you want to leave for this " + format + ": ");
         String comment = inputScanner.nextLine();
         if (is_renter) {
-            accountMethod.addComment(comment, rating, this.uid, hostId, booking.listing);
+            accountMethod.addComment(comment, rating, this.uid, hostId, booking.listing, true);
         } else {
-            accountMethod.addComment(comment, rating, this.uid, booking.renter, booking.listing);
+            accountMethod.addComment(comment, rating, this.uid, booking.renter, booking.listing, false);
         }
 
     }

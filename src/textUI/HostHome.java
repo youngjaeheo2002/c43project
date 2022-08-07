@@ -115,16 +115,11 @@ public class HostHome {
         int bedrooms_num = Integer.parseInt(inputScanner.nextLine());
         System.out.print("Enter the number of bathrooms: ");
         int bathrooms_num = Integer.parseInt(inputScanner.nextLine());
-        System.out.print("Enter the rent price per day: ");
-        double price = Double.parseDouble(inputScanner.nextLine());
         System.out.print("Enter the latitude: ");
         double latitude = Double.parseDouble(inputScanner.nextLine());
         System.out.print("Enter the longitude: ");
         double longitude = Double.parseDouble(inputScanner.nextLine());
-        // Call create listing
-        Listing newListing = new Listing(this.hostId, type, title, desc, bedrooms_num, bathrooms_num, price, latitude, longitude);
-        int lid = listingMethods.addListing(newListing);
-        if (lid <= 0) { return; }
+
         // Add address
         System.out.print("Enter street address: ");
         String street = inputScanner.nextLine();
@@ -134,9 +129,7 @@ public class HostHome {
         String country = inputScanner.nextLine();
         System.out.print("Enter postal code: ");
         String postal = inputScanner.nextLine();
-        Address newAddress = new Address(street, city, country, postal);
-        boolean setAddress = listingMethods.setAddress(lid, newAddress);
-        if (!setAddress) {return;}
+
         // Add amenities
         ArrayList<String> amenities = new ArrayList<>();
         boolean finishChoice = false;
@@ -159,18 +152,34 @@ public class HostHome {
                 amenities.add(supportedAmenities[choice-1]);
             }
         }
-        boolean addAmenities = listingMethods.addAmenities(lid, amenities);
-        if (!addAmenities) { return; }
+        // TODO: Show suggested price here
+
+        // Ask for price
+        System.out.print("Enter the rent price per day: ");
+        double price = Double.parseDouble(inputScanner.nextLine());
+
         // Add available dates
         System.out.println("Enter a date range of availability (you can modify this later).");
         System.out.print("Enter start date (YYYY-MM-DD): ");
         LocalDate start = LocalDate.parse(inputScanner.nextLine());
         System.out.print("Enter end date (YYYY-MM-DD): ");
         LocalDate end = LocalDate.parse(inputScanner.nextLine());
+
+        // Call create listing
+        Listing newListing = new Listing(this.hostId, type, title, desc, bedrooms_num, bathrooms_num, price, latitude, longitude);
+        int lid = listingMethods.addListing(newListing);
+        if (lid <= 0) { return; }
+
+        Address newAddress = new Address(street, city, country, postal);
+        boolean setAddress = listingMethods.setAddress(lid, newAddress);
+        if (!setAddress) {return;}
+
+        boolean addAmenities = listingMethods.addAmenities(lid, amenities);
+        if (!addAmenities) { return; }
+
         for (LocalDate i = start; i.isBefore(end) || i.isEqual(end); i = i.plusDays(1)) {
             listingMethods.addAvailability(lid, Date.valueOf(i));
         }
         System.out.println("Listing " + lid + "is created.");
-        return;
     }
 }

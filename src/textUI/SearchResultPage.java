@@ -15,34 +15,49 @@ public class SearchResultPage {
     public ListingMethods listingMethods;
     public BookingMethods bookingMethods;
     public Scanner inputScanner;
+    public boolean price_asc;
+    public boolean dist_search;
 
-    public SearchResultPage(ArrayList<Listing> result, int uid) {
+    public SearchResultPage(ArrayList<Listing> result, int uid, boolean dist_search) {
         this.searchResults = result;
         this.uid = uid;
         this.listingMethods = new ListingMethods();
         this.bookingMethods = new BookingMethods();
         this.inputScanner = new Scanner(System.in);
+        this.dist_search = dist_search;
+        this.price_asc = false;
     }
 
     public void displayResult() {
         System.out.println("Search results:");
         for (Listing l: this.searchResults) {
-            System.out.println(l.toString());
+            if (this.dist_search) {
+                System.out.println(l.toStringIncludeDistance());
+            } else {
+                System.out.println(l.toString());
+            }
         }
     }
 
     public void displayOptions() {
+        if (this.searchResults.isEmpty()) {
+            System.out.println("  Empty result...");
+            return;
+        }
         boolean exit = false;
+        String priceSort = "query specified";
         while (!exit) {
             displayResult();
-            System.out.print("\nSearch Options:\n    1. See a listing\n    2. Sort listings\n    3. Return\nChoose an option: ");
+            System.out.print("\nSearch Options:\n    1. See a listing\n    2. Toggle price sort (current: " + priceSort + ")\n    3. Return\nChoose an option: ");
             String userOption = inputScanner.nextLine();
             switch (userOption) {
                 case "1":
                     seeListing();
                     break;
                 case "2":
-
+                    this.price_asc = !this.price_asc;
+                    this.searchResults.sort((l1, l2) -> this.price_asc ? Double.compare(l1.price, l2.price) : Double.compare(l2.price, l1.price));
+                    priceSort = this.price_asc ? "Ascending" : "Descending";
                     break;
                 case "3":
                     exit = true;

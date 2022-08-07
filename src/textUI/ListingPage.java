@@ -42,7 +42,7 @@ public class ListingPage {
         boolean exit = false;
         while (!exit) {
             displayListing(lid);
-            System.out.print("Options:\n    1. Edit\n    2. View booking history\n    3. View comments\n    4. Return\nChoose an option: ");
+            System.out.print("Options:\n    1. Edit\n    2. View booking history\n    3. View listing comments\n    4. Return\nChoose an option: ");
             String userInput = inputScanner.nextLine();
             switch (userInput) {
                 case "1":
@@ -52,7 +52,7 @@ public class ListingPage {
                     this.bookingPage.displayOptions(lid, false);
                     break;
                 case "3":
-                    commentsPage.displayListingComments(lid);
+                    commentsPage.displayListingCommentOption(lid);
                     break;
                 case "4":
                     exit = true;
