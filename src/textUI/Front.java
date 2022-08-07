@@ -85,7 +85,7 @@ public class Front {
             String cardOption = inputScanner.nextLine();
             switch (cardOption) {
                 case "1" -> card_type = "Visa";
-                case "2" -> card_type = "Master Card";
+                case "2" -> card_type = "MasterCard";
                 case "3" -> card_type = "American Express";
                 case "4" -> card_type = "Discover";
                 default -> card_type = "Other";
