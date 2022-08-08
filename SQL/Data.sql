@@ -33,6 +33,12 @@ INSERT INTO has_amenities(lid, amenity) VALUES (3, "Air Conditioning");
 INSERT INTO has_amenities(lid, amenity) VALUES (3, "Internet");
 INSERT INTO has_amenities(lid, amenity) VALUES (4, "TV");
 
+-- insert availability:
+INSERT INTO available_on(lid, date) VALUES(1, '2022-08-25');
+INSERT INTO available_on(lid, date) VALUES(2, '2022-08-25');
+INSERT INTO available_on(lid, date) VALUES(3, '2022-08-25');
+INSERT INTO available_on(lid, date) VALUES(4, '2022-08-25');
+
 -- insert bookings:
 INSERT INTO bookings(start_date, end_date, cost, is_cancelled, book_date, listing, renterId) VALUES ('2022-08-10', '2022-08-12', 170, false, '2022-08-3', 1, 1);  -- bid: 1
 INSERT INTO bookings(start_date, end_date, cost, is_cancelled, book_date, listing, renterId) VALUES ('2022-08-10', '2022-08-12', 100, false, '2022-08-3', 2, 1);  -- bid: 2
