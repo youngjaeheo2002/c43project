@@ -72,7 +72,7 @@ public class RenterHome {
             System.out.println("\nCredit cards:");
             while (creditCards.next()) {
                 System.out.println("  Card: " + creditCards.getInt("cardID"));
-                System.out.println("  Card number: " + creditCards.getInt("card_num"));
+                System.out.println("  Card number: " + creditCards.getLong("card_num"));
                 System.out.println("  Expire date: " + creditCards.getDate("expiry_date"));
                 System.out.println("  Card type: " + creditCards.getString("card_type"));
                 System.out.println("");

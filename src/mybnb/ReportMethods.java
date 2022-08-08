@@ -5,15 +5,15 @@ import java.time.LocalDate;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 public class ReportMethods extends Methods{
-    final String BOOKINGS_PER_CITY = "SELECT a.city AS city, COUNT(b.bid) AS booking_num " +
-                "FROM addresses a LEFT JOIN at ON a.aid = at.address LEFT JOIN bookings b ON b.listing = at.listing " +
-                "WHERE b.is_cancelled = false AND b.start_date >= ? AND b.start_date <= ? " +
+    final String BOOKINGS_PER_CITY = "SELECT a.country AS country,  a.city AS city, COUNT(b.bid) AS booking_num " +
+                "FROM addresses a LEFT JOIN at ON a.aid = at.address " +
+                "LEFT JOIN (SELECT * FROM bookings WHERE is_cancelled = false AND start_date >= ? AND start_date <= ?) b ON b.listing = at.listing " +
                 "GROUP BY a.city";
 
 
-    final String BOOKINGS_PER_POSTAL = "SELECT a.city AS city, a.postal AS postal, COUNT(b.bid) as booking_num " +
-                "FROM addresses a LEFT JOIN at ON a.aid = at.address LEFT JOIN bookings b ON b.listing = at.listing " +
-                "WHERE b.is_cancelled = false AND b.start_date >= ? AND b.start_date <= ? " +
+    final String BOOKINGS_PER_POSTAL = "SELECT a.country AS country, a.city AS city, a.postal AS postal, COUNT(b.bid) as booking_num " +
+                "FROM addresses a LEFT JOIN at ON a.aid = at.address " +
+                "LEFT JOIN (SELECT * FROM bookings WHERE is_cancelled = false AND start_date >= ? AND start_date <= ?) b ON b.listing = at.listing " +
                 "GROUP BY a.city, a.postal";
 
     final String LISTINGS_PER_COUNTRY = "SELECT a.country AS country, COUNT(at.listing) AS listing_num " +
@@ -64,8 +64,8 @@ public class ReportMethods extends Methods{
 
     final String RENTER_BOOKINGS = "SELECT a.uid AS renterId, COUNT(b.bid) AS booking_count\n" +
                 "FROM accounts a LEFT JOIN creditCards c ON a.uid = c.renterId\n" +
-                "LEFT JOIN bookings b ON a.uid = b.renterId\n" +
-                "WHERE c.card_num IS NOT NULL AND b.is_cancelled = false AND b.start_date >= ? AND b.start_date <= ? \n" +
+                "LEFT JOIN (SELECT * FROM bookings WHERE is_cancelled = false AND start_date >= ? AND start_date <= ?) b ON a.uid = b.renterId\n" +
+                "WHERE c.card_num IS NOT NULL\n"+
                 "GROUP BY renterId\n" +
                 "ORDER BY booking_count DESC";
 
