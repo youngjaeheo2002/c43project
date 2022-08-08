@@ -141,3 +141,9 @@ CREATE TABLE comments (
     CHECK (rating >= 0 AND rating <=5),
     CHECK (sender <> receiver)
 );
+
+-- Other constraints (supposed to be assertions but MySQL does not support):     
+--     1. Cannot cancel booking if the booking is already started.
+--     2. Cannot create cancelation of bookings that are already cancelled.
+--     3. Comment sender and receiver must be either a renter appeared in a booking of the listing or the host of the listing.
+--     4. Each renter must have at least one credit card.
