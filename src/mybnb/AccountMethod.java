@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.ArrayList;
-
+ //comment for the skae of commenting
+ 
 public class AccountMethod extends Methods{
 
     // Write operation related queries here
